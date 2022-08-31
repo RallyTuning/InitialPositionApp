@@ -23,7 +23,7 @@ namespace InitianPositionApp
         readonly string appPath = "C:\\Users\\rally\\AppData\\Local\\Programs\\Reolink\\Reolink.exe";
         readonly int sinistra = 380;
         readonly int barra = 270;
-        int restartTimerMin = 1;
+        int restartTimerMin = 60;
 
         readonly DateTime adesso = DateTime.Now;
 
