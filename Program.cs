@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace InitianPositionApp
@@ -16,7 +13,16 @@ namespace InitianPositionApp
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
+
+            //Per sicurezza
+            if (System.IO.File.Exists("stop")) return;
+
+            Funzioni.LeggiImpostazioni();
+
+            Funzioni.Killalo(Funzioni.AppPath);
+
             Application.Run(new Frm_Main());
+
         }
     }
 }

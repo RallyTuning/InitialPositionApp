@@ -30,7 +30,7 @@
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Frm_Main));
             this.Pnl_Centrale = new System.Windows.Forms.Panel();
-            this.toolStrip1 = new System.Windows.Forms.ToolStrip();
+            this.ToolBarSotto = new System.Windows.Forms.ToolStrip();
             this.Btn_Chiudi = new System.Windows.Forms.ToolStripButton();
             this.Btn_Riavvia = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
@@ -38,7 +38,7 @@
             this.Txt_Restart = new System.Windows.Forms.ToolStripTextBox();
             this.Lbl_Timer = new System.Windows.Forms.ToolStripLabel();
             this.toolStripLabel2 = new System.Windows.Forms.ToolStripLabel();
-            this.toolStrip1.SuspendLayout();
+            this.ToolBarSotto.SuspendLayout();
             this.SuspendLayout();
             // 
             // Pnl_Centrale
@@ -49,10 +49,11 @@
             this.Pnl_Centrale.Size = new System.Drawing.Size(428, 234);
             this.Pnl_Centrale.TabIndex = 0;
             // 
-            // toolStrip1
+            // ToolBarSotto
             // 
-            this.toolStrip1.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.ToolBarSotto.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.ToolBarSotto.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
+            this.ToolBarSotto.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.Btn_Chiudi,
             this.Btn_Riavvia,
             this.toolStripSeparator1,
@@ -60,11 +61,11 @@
             this.Txt_Restart,
             this.Lbl_Timer,
             this.toolStripLabel2});
-            this.toolStrip1.Location = new System.Drawing.Point(0, 234);
-            this.toolStrip1.Name = "toolStrip1";
-            this.toolStrip1.Size = new System.Drawing.Size(428, 25);
-            this.toolStrip1.TabIndex = 1;
-            this.toolStrip1.Text = "toolStrip1";
+            this.ToolBarSotto.Location = new System.Drawing.Point(0, 234);
+            this.ToolBarSotto.Name = "ToolBarSotto";
+            this.ToolBarSotto.ShowItemToolTips = false;
+            this.ToolBarSotto.Size = new System.Drawing.Size(428, 25);
+            this.ToolBarSotto.TabIndex = 1;
             // 
             // Btn_Chiudi
             // 
@@ -92,15 +93,16 @@
             // toolStripLabel1
             // 
             this.toolStripLabel1.Name = "toolStripLabel1";
-            this.toolStripLabel1.Size = new System.Drawing.Size(46, 22);
-            this.toolStripLabel1.Text = "Restart:";
+            this.toolStripLabel1.Size = new System.Drawing.Size(71, 22);
+            this.toolStripLabel1.Text = "Riavvia ogni";
             // 
             // Txt_Restart
             // 
             this.Txt_Restart.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.Txt_Restart.Name = "Txt_Restart";
-            this.Txt_Restart.Size = new System.Drawing.Size(100, 25);
-            this.Txt_Restart.Text = "60";
+            this.Txt_Restart.Size = new System.Drawing.Size(50, 25);
+            this.Txt_Restart.Text = "999";
+            this.Txt_Restart.TextBoxTextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             this.Txt_Restart.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.Txt_Restart_KeyPress);
             this.Txt_Restart.TextChanged += new System.EventHandler(this.Txt_Restart_TextChanged);
             // 
@@ -124,15 +126,15 @@
             this.BackColor = System.Drawing.Color.Lime;
             this.ClientSize = new System.Drawing.Size(428, 259);
             this.Controls.Add(this.Pnl_Centrale);
-            this.Controls.Add(this.toolStrip1);
+            this.Controls.Add(this.ToolBarSotto);
             this.DoubleBuffered = true;
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
             this.Name = "Frm_Main";
             this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
             this.TransparencyKey = System.Drawing.Color.Lime;
             this.Shown += new System.EventHandler(this.Frm_Main_Shown);
-            this.toolStrip1.ResumeLayout(false);
-            this.toolStrip1.PerformLayout();
+            this.ToolBarSotto.ResumeLayout(false);
+            this.ToolBarSotto.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -141,7 +143,7 @@
         #endregion
 
         private System.Windows.Forms.Panel Pnl_Centrale;
-        private System.Windows.Forms.ToolStrip toolStrip1;
+        private System.Windows.Forms.ToolStrip ToolBarSotto;
         private System.Windows.Forms.ToolStripButton Btn_Chiudi;
         private System.Windows.Forms.ToolStripButton Btn_Riavvia;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;

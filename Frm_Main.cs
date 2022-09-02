@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Drawing;
-using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,7 +10,6 @@ namespace InitianPositionApp
 {
     public partial class Frm_Main : Form
     {
-
         #region Variabili
 
         [DllImport("user32.dll", SetLastError = true)]
@@ -20,15 +18,10 @@ namespace InitianPositionApp
         [DllImport("user32.dll", SetLastError = true)]
         private static extern bool MoveWindow(IntPtr hwnd, int x, int y, int cx, int cy, bool repaint);
 
-        readonly string appPath = "C:\\Users\\rally\\AppData\\Local\\Programs\\Reolink\\Reolink.exe";
-        readonly int sinistra = 380;
-        readonly int barra = 270;
-        int restartTimerMin = 60;
-
         readonly DateTime adesso = DateTime.Now;
 
-        ProcessStartInfo psi;
-        Process p;
+        ProcessStartInfo PSI;
+        Process P;
 
         #endregion
 
@@ -38,18 +31,16 @@ namespace InitianPositionApp
         {
             InitializeComponent();
 
-            this.Location = Screen.AllScreens[0].WorkingArea.Location;
-            Size s = Screen.AllScreens[0].WorkingArea.Size;
-            this.Size = new Size(s.Width - sinistra, s.Height);
+            this.Location = Screen.AllScreens[Funzioni.Monitor].WorkingArea.Location;
+
+            //Size S = Screen.AllScreens[Funzioni.Monitor].WorkingArea.Size;
+            this.Size = new Size(Funzioni.FormLarghezza,  Funzioni.FormAltezza);
+
+            Txt_Restart.Text = Funzioni.RestartTimerMin.ToString();
 
             this.Focus();
-            toolStrip1.Focus();
 
-            //Per sicurezza
-            if (File.Exists("stop"))
-            {
-                Application.Exit();
-            }
+            ToolBarSotto.Visible = Funzioni.MostraToolBar;
         }
 
         private void Frm_Main_Shown(object sender, EventArgs e)
@@ -58,27 +49,44 @@ namespace InitianPositionApp
             {
                 ReStarter();
 
-                psi = new ProcessStartInfo(appPath)
+                PSI = new ProcessStartInfo(Funzioni.AppPath)
                 {
-                    CreateNoWindow = true,
+                    CreateNoWindow = false,
                     RedirectStandardInput = false,
                     RedirectStandardOutput = false,
                     RedirectStandardError = false
                 };
 
-                p = Process.Start(psi);
-                p.WaitForInputIdle();
+                P = Process.Start(PSI);
+                //p.WaitForInputIdle();
 
-                Thread.Sleep(500);
+                //Thread.Sleep(500);
 
-                SetParent(p.MainWindowHandle, Pnl_Centrale.Handle);
+                //if (!p.WaitForInputIdle(10000)) // 10 s timout
+                //    throw new ApplicationException("Il processo impiega troppo ad avviarsi");
 
-                psi.WindowStyle = ProcessWindowStyle.Maximized;
+                int MaxCount = 10000;
+                int Count = 0;
+                IntPtr HWnd = IntPtr.Zero;
 
-                MoveWindow(p.MainWindowHandle, -barra, 0, this.Width + barra, this.Height - toolStrip1.Height, true);
+                while (HWnd == IntPtr.Zero || Count > MaxCount)
+                {
+                    P.WaitForInputIdle();
+                    P.Refresh();
+                    HWnd = P.MainWindowHandle;
+                    Count++;
+                }
 
-                //CenterToScreen();
-                psi.WindowStyle = ProcessWindowStyle.Maximized;
+                if (HWnd == IntPtr.Zero) throw new ApplicationException("Il processo impiega troppo ad avviarsi");
+
+                SetParent(HWnd, Pnl_Centrale.Handle);
+                
+                int AltezzaToolBar = 0;
+                if (Funzioni.MostraToolBar) AltezzaToolBar = ToolBarSotto.Height;
+
+                MoveWindow(HWnd, Funzioni.PosX, Funzioni.PosY, Funzioni.ExeLarghezza, Funzioni.ExeAltezza - AltezzaToolBar, true);
+
+                //PSI.WindowStyle = ProcessWindowStyle.Maximized;
             }
             catch (Exception ex)
             {
@@ -90,7 +98,7 @@ namespace InitianPositionApp
         {
             try
             {
-                p.Close();
+                Funzioni.Killalo(P.ProcessName);
                 Application.Exit();
             }
             catch (Exception ex)
@@ -103,7 +111,7 @@ namespace InitianPositionApp
         {
             try
             {
-                p.Close();
+                Funzioni.Killalo(P.ProcessName);
                 Application.Restart();
             }
             catch (Exception ex)
@@ -121,10 +129,10 @@ namespace InitianPositionApp
         {
             try
             {
-                if (string.IsNullOrEmpty(Txt_Restart.Text)) { return; }
-                if (Int32.Parse(Txt_Restart.Text) <= 0) { return; }
+                if (string.IsNullOrEmpty(Txt_Restart.Text)) return;
+                if (Int32.Parse(Txt_Restart.Text) <= 0) return;
 
-                restartTimerMin = Int32.Parse(Txt_Restart.Text);
+                Funzioni.RestartTimerMin = Int32.Parse(Txt_Restart.Text);
             }
             catch (Exception ex)
             {
@@ -139,14 +147,16 @@ namespace InitianPositionApp
 
         private async void ReStarter()
         {
+            if (Funzioni.RestartTimerMin == 0) return;
+
             await Task.Run(() =>
             {
-                DateTime dopo = adesso.AddMinutes(restartTimerMin);
-                TimeSpan t = adesso.AddMinutes(restartTimerMin) - DateTime.Now;
+                DateTime dopo = adesso.AddMinutes(Funzioni.RestartTimerMin);
+                TimeSpan t = adesso.AddMinutes(Funzioni.RestartTimerMin) - DateTime.Now;
 
                 while (t.Ticks >= 0)
                 {
-                    t = adesso.AddMinutes(restartTimerMin) - DateTime.Now;
+                    t = adesso.AddMinutes(Funzioni.RestartTimerMin) - DateTime.Now;
 
                     this.Invoke((System.Action)(() =>
                     {
@@ -158,7 +168,7 @@ namespace InitianPositionApp
                 }
             });
 
-            p.Close();
+            Funzioni.Killalo(P.ProcessName);
             Application.Restart();
         }
 
