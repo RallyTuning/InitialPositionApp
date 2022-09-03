@@ -12,11 +12,14 @@ namespace InitianPositionApp
     {
         #region Variabili
 
-        [DllImport("user32.dll", SetLastError = true)]
-        static extern IntPtr SetParent(IntPtr hWndChild, IntPtr hWndNewParent);
+        internal const int WM_NCLBUTTONDOWN = 0xA1;
+        internal const int HT_CAPTION = 0x2;
 
-        [DllImport("user32.dll", SetLastError = true)]
-        private static extern bool MoveWindow(IntPtr hwnd, int x, int y, int cx, int cy, bool repaint);
+        [DllImportAttribute("user32.dll")]
+        public static extern int SendMessage(IntPtr hWnd, int Msg, IntPtr wParam, IntPtr lParam);
+        [DllImportAttribute("user32.dll")]
+        internal static extern bool ReleaseCapture();
+
 
         readonly DateTime adesso = DateTime.Now;
 
@@ -31,16 +34,21 @@ namespace InitianPositionApp
         {
             InitializeComponent();
 
-            this.Location = Screen.AllScreens[Funzioni.Monitor].WorkingArea.Location;
+            this.Location = new Point(
+                Screen.AllScreens[Funzioni.Monitor].WorkingArea.X + Funzioni.FormPosX,
+                Screen.AllScreens[Funzioni.Monitor].WorkingArea.Y + Funzioni.FormPosY
+                );
 
             //Size S = Screen.AllScreens[Funzioni.Monitor].WorkingArea.Size;
-            this.Size = new Size(Funzioni.FormLarghezza,  Funzioni.FormAltezza);
+            this.Size = new Size(Funzioni.FormLarghezza, Funzioni.FormAltezza);
 
             Txt_Restart.Text = Funzioni.RestartTimerMin.ToString();
 
             this.Focus();
 
             ToolBarSotto.Visible = Funzioni.MostraToolBar;
+
+            Btn_Lbl_Versione.Text = "Version: " + System.Reflection.Assembly.GetEntryAssembly().GetName().Version.Major;
         }
 
         private void Frm_Main_Shown(object sender, EventArgs e)
@@ -51,13 +59,14 @@ namespace InitianPositionApp
 
                 PSI = new ProcessStartInfo(Funzioni.AppPath)
                 {
-                    CreateNoWindow = false,
+                    CreateNoWindow = true,
                     RedirectStandardInput = false,
                     RedirectStandardOutput = false,
                     RedirectStandardError = false
                 };
 
                 P = Process.Start(PSI);
+
                 //p.WaitForInputIdle();
 
                 //Thread.Sleep(500);
@@ -77,24 +86,66 @@ namespace InitianPositionApp
                     Count++;
                 }
 
-                if (HWnd == IntPtr.Zero) throw new ApplicationException("Il processo impiega troppo ad avviarsi");
+                if (HWnd == IntPtr.Zero) throw new ApplicationException("The process is taking long to start");
 
-                SetParent(HWnd, Pnl_Centrale.Handle);
-                
+                Funzioni.SetParent(HWnd, Pnl_Centrale.Handle);
+
                 int AltezzaToolBar = 0;
                 if (Funzioni.MostraToolBar) AltezzaToolBar = ToolBarSotto.Height;
 
-                MoveWindow(HWnd, Funzioni.PosX, Funzioni.PosY, Funzioni.ExeLarghezza, Funzioni.ExeAltezza - AltezzaToolBar, true);
+                Funzioni.MoveWindow(HWnd, Funzioni.ExePosX, Funzioni.ExePosY, Funzioni.ExeLarghezza, Funzioni.ExeAltezza - AltezzaToolBar, true);
 
                 //PSI.WindowStyle = ProcessWindowStyle.Maximized;
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message, "Errore", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
-        private void Btn_Chiudi_Click(object sender, EventArgs e)
+        private void Frm_Main_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            try
+            {
+                Funzioni.FormAltezza = this.Height;
+                Funzioni.FormLarghezza = this.Width;
+                Funzioni.FormPosX = this.Location.X;
+                Funzioni.FormPosY = this.Location.Y;
+
+                Funzioni.LeggiImpostazioni(true);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void Btn_About_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                Process.Start("https://github.com/RallyTuning/InitianPositionApp");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void Btn_Impostazioni_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                Form Frm_Impo = new Frm_Impostazioni();
+                Frm_Impo.ShowDialog();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void Btn_Esci_Click(object sender, EventArgs e)
         {
             try
             {
@@ -103,7 +154,7 @@ namespace InitianPositionApp
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message, "Errore", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -116,7 +167,7 @@ namespace InitianPositionApp
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message, "Errore", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -136,9 +187,18 @@ namespace InitianPositionApp
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message, "Errore", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
 
+        }
+
+        public void ToolBarSotto_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (e.Button == System.Windows.Forms.MouseButtons.Left)
+            {
+                ReleaseCapture();
+                SendMessage(this.Handle, WM_NCLBUTTONDOWN, new IntPtr(HT_CAPTION), IntPtr.Zero);
+            }
         }
 
         #endregion

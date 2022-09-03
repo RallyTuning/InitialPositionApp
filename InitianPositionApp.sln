@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.3.32819.101
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InitianPositionApp", "InitianPositionApp.csproj", "{2EDE6335-2886-475A-81D8-74B58C813A5A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InitianPositionApp", "InitianPositionApp\InitianPositionApp.csproj", "{2EDE6335-2886-475A-81D8-74B58C813A5A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -31,9 +31,15 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Frm_Main));
             this.Pnl_Centrale = new System.Windows.Forms.Panel();
             this.ToolBarSotto = new System.Windows.Forms.ToolStrip();
-            this.Btn_Chiudi = new System.Windows.Forms.ToolStripButton();
-            this.Btn_Riavvia = new System.Windows.Forms.ToolStripButton();
+            this.toolStripDropDownButton1 = new System.Windows.Forms.ToolStripDropDownButton();
+            this.Btn_Lbl_Versione = new System.Windows.Forms.ToolStripMenuItem();
+            this.Btn_About = new System.Windows.Forms.ToolStripMenuItem();
+            this.Btn_Impostazioni = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
+            this.Btn_Esci = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
+            this.Btn_Riavvia = new System.Windows.Forms.ToolStripButton();
+            this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             this.toolStripLabel1 = new System.Windows.Forms.ToolStripLabel();
             this.Txt_Restart = new System.Windows.Forms.ToolStripTextBox();
             this.Lbl_Timer = new System.Windows.Forms.ToolStripLabel();
@@ -46,58 +52,103 @@
             this.Pnl_Centrale.Dock = System.Windows.Forms.DockStyle.Fill;
             this.Pnl_Centrale.Location = new System.Drawing.Point(0, 0);
             this.Pnl_Centrale.Name = "Pnl_Centrale";
-            this.Pnl_Centrale.Size = new System.Drawing.Size(428, 234);
+            this.Pnl_Centrale.Size = new System.Drawing.Size(500, 275);
             this.Pnl_Centrale.TabIndex = 0;
             // 
             // ToolBarSotto
             // 
             this.ToolBarSotto.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.ToolBarSotto.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
             this.ToolBarSotto.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.Btn_Chiudi,
-            this.Btn_Riavvia,
+            this.toolStripDropDownButton1,
             this.toolStripSeparator1,
+            this.Btn_Riavvia,
+            this.toolStripSeparator2,
             this.toolStripLabel1,
             this.Txt_Restart,
             this.Lbl_Timer,
             this.toolStripLabel2});
-            this.ToolBarSotto.Location = new System.Drawing.Point(0, 234);
+            this.ToolBarSotto.Location = new System.Drawing.Point(0, 275);
             this.ToolBarSotto.Name = "ToolBarSotto";
             this.ToolBarSotto.ShowItemToolTips = false;
-            this.ToolBarSotto.Size = new System.Drawing.Size(428, 25);
+            this.ToolBarSotto.Size = new System.Drawing.Size(500, 25);
             this.ToolBarSotto.TabIndex = 1;
+            this.ToolBarSotto.MouseMove += new System.Windows.Forms.MouseEventHandler(this.ToolBarSotto_MouseMove);
             // 
-            // Btn_Chiudi
+            // toolStripDropDownButton1
             // 
-            this.Btn_Chiudi.Image = ((System.Drawing.Image)(resources.GetObject("Btn_Chiudi.Image")));
-            this.Btn_Chiudi.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.Btn_Chiudi.Name = "Btn_Chiudi";
-            this.Btn_Chiudi.Size = new System.Drawing.Size(62, 22);
-            this.Btn_Chiudi.Text = "&Chiudi";
-            this.Btn_Chiudi.Click += new System.EventHandler(this.Btn_Chiudi_Click);
+            this.toolStripDropDownButton1.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.Btn_Lbl_Versione,
+            this.Btn_About,
+            this.Btn_Impostazioni,
+            this.toolStripSeparator3,
+            this.Btn_Esci});
+            this.toolStripDropDownButton1.Image = ((System.Drawing.Image)(resources.GetObject("toolStripDropDownButton1.Image")));
+            this.toolStripDropDownButton1.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.toolStripDropDownButton1.Name = "toolStripDropDownButton1";
+            this.toolStripDropDownButton1.Size = new System.Drawing.Size(67, 22);
+            this.toolStripDropDownButton1.Text = "&Menu";
             // 
-            // Btn_Riavvia
+            // Btn_Lbl_Versione
             // 
-            this.Btn_Riavvia.Image = ((System.Drawing.Image)(resources.GetObject("Btn_Riavvia.Image")));
-            this.Btn_Riavvia.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.Btn_Riavvia.Name = "Btn_Riavvia";
-            this.Btn_Riavvia.Size = new System.Drawing.Size(64, 22);
-            this.Btn_Riavvia.Text = "&Riavvia";
-            this.Btn_Riavvia.Click += new System.EventHandler(this.Btn_Riavvia_Click);
+            this.Btn_Lbl_Versione.Enabled = false;
+            this.Btn_Lbl_Versione.Name = "Btn_Lbl_Versione";
+            this.Btn_Lbl_Versione.Size = new System.Drawing.Size(124, 22);
+            this.Btn_Lbl_Versione.Text = "Version: 0";
+            // 
+            // Btn_About
+            // 
+            this.Btn_About.Name = "Btn_About";
+            this.Btn_About.Size = new System.Drawing.Size(124, 22);
+            this.Btn_About.Text = "&About";
+            this.Btn_About.Click += new System.EventHandler(this.Btn_About_Click);
+            // 
+            // Btn_Impostazioni
+            // 
+            this.Btn_Impostazioni.Name = "Btn_Impostazioni";
+            this.Btn_Impostazioni.Size = new System.Drawing.Size(124, 22);
+            this.Btn_Impostazioni.Text = "&Settings";
+            this.Btn_Impostazioni.Click += new System.EventHandler(this.Btn_Impostazioni_Click);
+            // 
+            // toolStripSeparator3
+            // 
+            this.toolStripSeparator3.Name = "toolStripSeparator3";
+            this.toolStripSeparator3.Size = new System.Drawing.Size(121, 6);
+            // 
+            // Btn_Esci
+            // 
+            this.Btn_Esci.Name = "Btn_Esci";
+            this.Btn_Esci.Size = new System.Drawing.Size(124, 22);
+            this.Btn_Esci.Text = "&Quit";
+            this.Btn_Esci.Click += new System.EventHandler(this.Btn_Esci_Click);
             // 
             // toolStripSeparator1
             // 
             this.toolStripSeparator1.Name = "toolStripSeparator1";
             this.toolStripSeparator1.Size = new System.Drawing.Size(6, 25);
             // 
+            // Btn_Riavvia
+            // 
+            this.Btn_Riavvia.Image = ((System.Drawing.Image)(resources.GetObject("Btn_Riavvia.Image")));
+            this.Btn_Riavvia.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.Btn_Riavvia.Name = "Btn_Riavvia";
+            this.Btn_Riavvia.Size = new System.Drawing.Size(89, 22);
+            this.Btn_Riavvia.Text = "&Restart now";
+            this.Btn_Riavvia.Click += new System.EventHandler(this.Btn_Riavvia_Click);
+            // 
+            // toolStripSeparator2
+            // 
+            this.toolStripSeparator2.Name = "toolStripSeparator2";
+            this.toolStripSeparator2.Size = new System.Drawing.Size(6, 25);
+            // 
             // toolStripLabel1
             // 
             this.toolStripLabel1.Name = "toolStripLabel1";
-            this.toolStripLabel1.Size = new System.Drawing.Size(71, 22);
-            this.toolStripLabel1.Text = "Riavvia ogni";
+            this.toolStripLabel1.Size = new System.Drawing.Size(74, 22);
+            this.toolStripLabel1.Text = "Restart every";
             // 
             // Txt_Restart
             // 
+            this.Txt_Restart.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.Txt_Restart.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.Txt_Restart.Name = "Txt_Restart";
             this.Txt_Restart.Size = new System.Drawing.Size(50, 25);
@@ -116,15 +167,15 @@
             // toolStripLabel2
             // 
             this.toolStripLabel2.Name = "toolStripLabel2";
-            this.toolStripLabel2.Size = new System.Drawing.Size(28, 22);
-            this.toolStripLabel2.Text = "min";
+            this.toolStripLabel2.Size = new System.Drawing.Size(50, 22);
+            this.toolStripLabel2.Text = "minutes";
             // 
             // Frm_Main
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.Lime;
-            this.ClientSize = new System.Drawing.Size(428, 259);
+            this.ClientSize = new System.Drawing.Size(500, 300);
             this.Controls.Add(this.Pnl_Centrale);
             this.Controls.Add(this.ToolBarSotto);
             this.DoubleBuffered = true;
@@ -132,6 +183,7 @@
             this.Name = "Frm_Main";
             this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
             this.TransparencyKey = System.Drawing.Color.Lime;
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Frm_Main_FormClosing);
             this.Shown += new System.EventHandler(this.Frm_Main_Shown);
             this.ToolBarSotto.ResumeLayout(false);
             this.ToolBarSotto.PerformLayout();
@@ -144,13 +196,19 @@
 
         private System.Windows.Forms.Panel Pnl_Centrale;
         private System.Windows.Forms.ToolStrip ToolBarSotto;
-        private System.Windows.Forms.ToolStripButton Btn_Chiudi;
         private System.Windows.Forms.ToolStripButton Btn_Riavvia;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
         private System.Windows.Forms.ToolStripLabel toolStripLabel1;
         private System.Windows.Forms.ToolStripTextBox Txt_Restart;
         private System.Windows.Forms.ToolStripLabel Lbl_Timer;
         private System.Windows.Forms.ToolStripLabel toolStripLabel2;
+        private System.Windows.Forms.ToolStripDropDownButton toolStripDropDownButton1;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
+        private System.Windows.Forms.ToolStripMenuItem Btn_About;
+        private System.Windows.Forms.ToolStripMenuItem Btn_Impostazioni;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
+        private System.Windows.Forms.ToolStripMenuItem Btn_Esci;
+        private System.Windows.Forms.ToolStripMenuItem Btn_Lbl_Versione;
     }
 }
 
