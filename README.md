@@ -1,2 +1,2 @@
 # InitianPositionApp
- Fa partire un exe in una posizione e con dimensioni personalizzate
+ Start an exe in a custom location and with custom size
