@@ -12,16 +12,16 @@ namespace InitianPositionApp
     {
         #region Variabili
 
-        internal const int WM_NCLBUTTONDOWN = 0xA1;
-        internal const int HT_CAPTION = 0x2;
+        private const int WM_NCLBUTTONDOWN = 0xA1;
+        private const int HT_CAPTION = 0x2;
 
         [DllImportAttribute("user32.dll")]
         public static extern int SendMessage(IntPtr hWnd, int Msg, IntPtr wParam, IntPtr lParam);
         [DllImportAttribute("user32.dll")]
-        internal static extern bool ReleaseCapture();
+        private static extern bool ReleaseCapture();
 
 
-        readonly DateTime adesso = DateTime.Now;
+        private DateTime Adesso = DateTime.Now;
 
         ProcessStartInfo PSI;
         Process P;
@@ -34,19 +34,7 @@ namespace InitianPositionApp
         {
             InitializeComponent();
 
-            this.Location = new Point(
-                Screen.AllScreens[Funzioni.Monitor].WorkingArea.X + Funzioni.FormPosX,
-                Screen.AllScreens[Funzioni.Monitor].WorkingArea.Y + Funzioni.FormPosY
-                );
-
-            //Size S = Screen.AllScreens[Funzioni.Monitor].WorkingArea.Size;
-            this.Size = new Size(Funzioni.FormLarghezza, Funzioni.FormAltezza);
-
-            Txt_Restart.Text = Funzioni.RestartTimerMin.ToString();
-
-            this.Focus();
-
-            ToolBarSotto.Visible = Funzioni.MostraToolBar;
+            ThisMe();
 
             Btn_Lbl_Versione.Text = "Version: " + System.Reflection.Assembly.GetEntryAssembly().GetName().Version.Major;
         }
@@ -76,24 +64,20 @@ namespace InitianPositionApp
 
                 int MaxCount = 10000;
                 int Count = 0;
-                IntPtr HWnd = IntPtr.Zero;
-
-                while (HWnd == IntPtr.Zero || Count > MaxCount)
+                
+                while (Funzioni.HWnd == IntPtr.Zero || Count > MaxCount)
                 {
                     P.WaitForInputIdle();
                     P.Refresh();
-                    HWnd = P.MainWindowHandle;
+                    Funzioni.HWnd = P.MainWindowHandle;
                     Count++;
                 }
 
-                if (HWnd == IntPtr.Zero) throw new ApplicationException("The process is taking long to start");
+                if (Funzioni.HWnd == IntPtr.Zero) throw new ApplicationException("The process is taking long to start");
 
-                Funzioni.SetParent(HWnd, Pnl_Centrale.Handle);
+                Funzioni.SetParent(Funzioni.HWnd, Pnl_Centrale.Handle);
 
-                int AltezzaToolBar = 0;
-                if (Funzioni.MostraToolBar) AltezzaToolBar = ToolBarSotto.Height;
-
-                Funzioni.MoveWindow(HWnd, Funzioni.ExePosX, Funzioni.ExePosY, Funzioni.ExeLarghezza, Funzioni.ExeAltezza - AltezzaToolBar, true);
+                Funzioni.MoveWindow(Funzioni.HWnd, Funzioni.ExePosX, Funzioni.ExePosY, Funzioni.ExeLarghezza, Funzioni.ExeAltezza - Funzioni.AltezzaToolBar, true);
 
                 //PSI.WindowStyle = ProcessWindowStyle.Maximized;
             }
@@ -137,7 +121,15 @@ namespace InitianPositionApp
             try
             {
                 Form Frm_Impo = new Frm_Impostazioni();
-                Frm_Impo.ShowDialog();
+                if (Frm_Impo.ShowDialog() == DialogResult.OK)
+                {
+                    ThisMe();
+
+                    if (Funzioni.RestartTimerMin > 0)
+                    {
+                        ReStarter();
+                    }    
+                }
             }
             catch (Exception ex)
             {
@@ -149,7 +141,7 @@ namespace InitianPositionApp
         {
             try
             {
-                Funzioni.Killalo(P.ProcessName);
+                if (P != null) Funzioni.Killalo(P.ProcessName);
                 Application.Exit();
             }
             catch (Exception ex)
@@ -162,7 +154,7 @@ namespace InitianPositionApp
         {
             try
             {
-                Funzioni.Killalo(P.ProcessName);
+                if (P != null) Funzioni.Killalo(P.ProcessName);
                 Application.Restart();
             }
             catch (Exception ex)
@@ -184,6 +176,7 @@ namespace InitianPositionApp
                 if (Int32.Parse(Txt_Restart.Text) <= 0) return;
 
                 Funzioni.RestartTimerMin = Int32.Parse(Txt_Restart.Text);
+                Adesso = DateTime.Now;
             }
             catch (Exception ex)
             {
@@ -205,30 +198,53 @@ namespace InitianPositionApp
 
         #region void
 
+        private void ThisMe()
+        {
+            this.Location = new Point(
+                Screen.AllScreens[Funzioni.Monitor].WorkingArea.X + Funzioni.FormPosX,
+                Screen.AllScreens[Funzioni.Monitor].WorkingArea.Y + Funzioni.FormPosY
+                );
+
+            //Size S = Screen.AllScreens[Funzioni.Monitor].WorkingArea.Size;
+            this.Size = new Size(Funzioni.FormLarghezza, Funzioni.FormAltezza);
+
+            Txt_Restart.Text = Funzioni.RestartTimerMin.ToString();
+
+            this.Focus();
+
+            ToolBarSotto.Visible = Funzioni.MostraToolBar;
+
+            if (Funzioni.MostraToolBar)
+                Funzioni.AltezzaToolBar = ToolBarSotto.Height;
+            else
+                Funzioni.AltezzaToolBar = 0;
+        }
+
         private async void ReStarter()
         {
             if (Funzioni.RestartTimerMin == 0) return;
 
+            Adesso = DateTime.Now;
+
             await Task.Run(() =>
             {
-                DateTime dopo = adesso.AddMinutes(Funzioni.RestartTimerMin);
-                TimeSpan t = adesso.AddMinutes(Funzioni.RestartTimerMin) - DateTime.Now;
+                DateTime dopo = Adesso.AddMinutes(Funzioni.RestartTimerMin);
+                TimeSpan t = Adesso.AddMinutes(Funzioni.RestartTimerMin) - DateTime.Now;
 
                 while (t.Ticks >= 0)
                 {
-                    t = adesso.AddMinutes(Funzioni.RestartTimerMin) - DateTime.Now;
+                    t = Adesso.AddMinutes(Funzioni.RestartTimerMin) - DateTime.Now;
 
                     this.Invoke((System.Action)(() =>
                     {
                         Lbl_Timer.Text = t.ToString(@"hh\:mm\:ss");
                     }));
 
-
                     Thread.Sleep(500);
                 }
             });
 
-            Funzioni.Killalo(P.ProcessName);
+            if (P != null) Funzioni.Killalo(P.ProcessName);
             Application.Restart();
         }
 

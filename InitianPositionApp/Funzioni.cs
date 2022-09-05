@@ -14,6 +14,8 @@ namespace InitianPositionApp
         [DllImport("user32.dll", SetLastError = true)]
         internal static extern bool MoveWindow(IntPtr hwnd, int x, int y, int cx, int cy, bool repaint);
 
+        internal static IntPtr HWnd = IntPtr.Zero;
+
         internal static string AppPath = @"C:\Windows\notepad.exe";
 
         internal static int Monitor = 0;
@@ -32,6 +34,7 @@ namespace InitianPositionApp
         internal static int RestartTimerMin = 0;
 
         internal static bool MostraToolBar = true;
+        internal static int AltezzaToolBar = 0;
 
         internal static void Killalo(string P)
         {
@@ -88,20 +91,20 @@ namespace InitianPositionApp
                                     FormPosY = Int32.Parse(Valor);
                                     break;
 
-                                case "wxeposx":
-                                    ExePosX = Int32.Parse(Valor);
-                                    break;
-
-                                case "wxeposy":
-                                    ExePosY = Int32.Parse(Valor);
-                                    break;
-
                                 case "exewidth":
                                     ExeLarghezza = Int32.Parse(Valor);
                                     break;
 
                                 case "exeheight":
                                     ExeAltezza = Int32.Parse(Valor);
+                                    break;
+
+                                case "exeposx":
+                                    ExePosX = Int32.Parse(Valor);
+                                    break;
+
+                                case "exeposy":
+                                    ExePosY = Int32.Parse(Valor);
                                     break;
 
                                 case "restarttimermin":
