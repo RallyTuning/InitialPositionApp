@@ -93,8 +93,8 @@ namespace InitianPositionApp
             {
                 Funzioni.FormAltezza = this.Height;
                 Funzioni.FormLarghezza = this.Width;
-                Funzioni.FormPosX = this.Location.X;
-                Funzioni.FormPosY = this.Location.Y;
+                Funzioni.FormPosX = this.Location.X - Screen.AllScreens[Funzioni.Monitor].WorkingArea.X;
+                Funzioni.FormPosY = this.Location.Y - Screen.AllScreens[Funzioni.Monitor].WorkingArea.Y;
 
                 Funzioni.LeggiImpostazioni(true);
             }
@@ -209,8 +209,6 @@ namespace InitianPositionApp
             this.Size = new Size(Funzioni.FormLarghezza, Funzioni.FormAltezza);
 
             Txt_Restart.Text = Funzioni.RestartTimerMin.ToString();
-
-            this.Focus();
 
             ToolBarSotto.Visible = Funzioni.MostraToolBar;
 
