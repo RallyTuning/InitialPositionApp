@@ -45,41 +45,7 @@ namespace InitianPositionApp
             {
                 ReStarter();
 
-                PSI = new ProcessStartInfo(Funzioni.AppPath)
-                {
-                    CreateNoWindow = true,
-                    RedirectStandardInput = false,
-                    RedirectStandardOutput = false,
-                    RedirectStandardError = false
-                };
-
-                P = Process.Start(PSI);
-
-                //p.WaitForInputIdle();
-
-                //Thread.Sleep(500);
-
-                //if (!p.WaitForInputIdle(10000)) // 10 s timout
-                //    throw new ApplicationException("Il processo impiega troppo ad avviarsi");
-
-                int MaxCount = 10000;
-                int Count = 0;
-                
-                while (Funzioni.HWnd == IntPtr.Zero || Count > MaxCount)
-                {
-                    P.WaitForInputIdle();
-                    P.Refresh();
-                    Funzioni.HWnd = P.MainWindowHandle;
-                    Count++;
-                }
-
-                if (Funzioni.HWnd == IntPtr.Zero) throw new ApplicationException("The process is taking long to start");
-
-                Funzioni.SetParent(Funzioni.HWnd, Pnl_Centrale.Handle);
-
-                Funzioni.MoveWindow(Funzioni.HWnd, Funzioni.ExePosX, Funzioni.ExePosY, Funzioni.ExeLarghezza, Funzioni.ExeAltezza - Funzioni.AltezzaToolBar, true);
-
-                //PSI.WindowStyle = ProcessWindowStyle.Maximized;
+                AvviaExe();
             }
             catch (Exception ex)
             {
@@ -128,7 +94,7 @@ namespace InitianPositionApp
                     if (Funzioni.RestartTimerMin > 0)
                     {
                         ReStarter();
-                    }    
+                    }
                 }
             }
             catch (Exception ex)
@@ -141,7 +107,7 @@ namespace InitianPositionApp
         {
             try
             {
-                if (P != null) Funzioni.Killalo(P.ProcessName);
+                if (P.HasExited == false) Funzioni.Killalo(P.ProcessName);
                 Application.Exit();
             }
             catch (Exception ex)
@@ -154,8 +120,9 @@ namespace InitianPositionApp
         {
             try
             {
-                if (P != null) Funzioni.Killalo(P.ProcessName);
-                Application.Restart();
+                if (P.HasExited == false) Funzioni.Killalo(P.ProcessName);
+                //Application.Restart();
+                AvviaExe();
             }
             catch (Exception ex)
             {
@@ -218,6 +185,47 @@ namespace InitianPositionApp
                 Funzioni.AltezzaToolBar = 0;
         }
 
+        private void AvviaExe()
+        {
+            Funzioni.HWnd = IntPtr.Zero;
+
+            PSI = new ProcessStartInfo(Funzioni.AppPath)
+            {
+                CreateNoWindow = true,
+                RedirectStandardInput = false,
+                RedirectStandardOutput = false,
+                RedirectStandardError = false
+            };
+
+            P = Process.Start(PSI);
+
+            //p.WaitForInputIdle();
+
+            //Thread.Sleep(500);
+
+            //if (!p.WaitForInputIdle(10000)) // 10 s timout
+            //    throw new ApplicationException("Il processo impiega troppo ad avviarsi");
+
+            int MaxCount = 10000;
+            int Count = 0;
+
+            while (Funzioni.HWnd == IntPtr.Zero || Count > MaxCount)
+            {
+                P.WaitForInputIdle();
+                P.Refresh();
+                Funzioni.HWnd = P.MainWindowHandle;
+                Count++;
+            }
+
+            if (Funzioni.HWnd == IntPtr.Zero) throw new ApplicationException("The process is taking long to start");
+
+            Funzioni.SetParent(Funzioni.HWnd, Pnl_Centrale.Handle);
+
+            Funzioni.MoveWindow(Funzioni.HWnd, Funzioni.ExePosX, Funzioni.ExePosY, Funzioni.ExeLarghezza, Funzioni.ExeAltezza - Funzioni.AltezzaToolBar, true);
+
+            //PSI.WindowStyle = ProcessWindowStyle.Maximized;
+        }
+
         private async void ReStarter()
         {
             if (Funzioni.RestartTimerMin == 0) return;
@@ -242,8 +250,10 @@ namespace InitianPositionApp
                 }
             });
 
-            if (P != null) Funzioni.Killalo(P.ProcessName);
-            Application.Restart();
+            if (P.HasExited == false) Funzioni.Killalo(P.ProcessName);
+            AvviaExe();
+
+            ReStarter();
         }
 
         #endregion
