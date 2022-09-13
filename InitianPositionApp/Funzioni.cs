@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -13,6 +14,29 @@ namespace InitianPositionApp
 
         [DllImport("user32.dll", SetLastError = true)]
         internal static extern bool MoveWindow(IntPtr hwnd, int x, int y, int cx, int cy, bool repaint);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        internal static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+
+
+
+        internal delegate bool EnumThreadDelegate(IntPtr hWnd, IntPtr lParam);
+
+        [DllImport("user32.dll")]
+        internal static extern bool EnumThreadWindows(int dwThreadId, EnumThreadDelegate lpfn,
+            IntPtr lParam);
+
+        internal static IEnumerable<IntPtr> EnumerateProcessWindowHandles(int processId)
+        {
+            var handles = new List<IntPtr>();
+
+            foreach (ProcessThread thread in Process.GetProcessById(processId).Threads)
+                EnumThreadWindows(thread.Id,
+                    (hWnd, lParam) => { handles.Add(hWnd); return true; }, IntPtr.Zero);
+
+            return handles;
+        }
+
 
         internal static IntPtr HWnd = IntPtr.Zero;
 
