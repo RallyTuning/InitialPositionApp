@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -8,12 +9,57 @@ namespace InitianPositionApp
 {
     internal static class Funzioni
     {
+
+        #region WinApi
+
         [DllImport("user32.dll", SetLastError = true)]
         internal static extern IntPtr SetParent(IntPtr hWndChild, IntPtr hWndNewParent);
 
         [DllImport("user32.dll", SetLastError = true)]
         internal static extern bool MoveWindow(IntPtr hwnd, int x, int y, int cx, int cy, bool repaint);
 
+        [DllImport("user32.dll", SetLastError = true)]
+        internal static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+
+        internal delegate bool EnumThreadDelegate(IntPtr hWnd, IntPtr lParam);
+
+        [DllImport("user32.dll")]
+        internal static extern bool EnumThreadWindows(int dwThreadId, EnumThreadDelegate lpfn,
+            IntPtr lParam);
+
+        internal static IEnumerable<IntPtr> EnumerateProcessWindowHandles(int processId)
+        {
+            var handles = new List<IntPtr>();
+
+            foreach (ProcessThread thread in Process.GetProcessById(processId).Threads)
+                EnumThreadWindows(thread.Id,
+                    (hWnd, lParam) => { handles.Add(hWnd); return true; }, IntPtr.Zero);
+
+            return handles;
+        }
+
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool InvalidateRect(IntPtr hWnd, IntPtr rect, bool bErase);
+
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool UpdateWindow(IntPtr hWnd);
+
+
+
+
+
+
+        [DllImport("user32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, UInt32 uFlags);
+
+        #endregion
+
+        /// <summary>
+        /// Handle of the nested exe
+        /// </summary>
         internal static IntPtr HWnd = IntPtr.Zero;
 
         internal static string AppPath = @"C:\Windows\notepad.exe";
@@ -36,16 +82,52 @@ namespace InitianPositionApp
         internal static bool MostraToolBar = true;
         internal static int AltezzaToolBar = 0;
 
+
+
+        /// <summary>
+        /// Kill a process by PID
+        /// </summary>
+        /// <param name="P">PID</param>
+        internal static void Killalo(int P)
+        {
+            if (P <= 0)
+            {
+                Process.GetProcesses().Where(PR => PR.Id == P).ToList()
+                    .ForEach(PRR => PRR.Kill());
+            }
+        }
+
+        /// <summary>
+        /// Kill a process by path exe
+        /// </summary>
+        /// <param name="P">The:\Full\Path\Of_The\ProcessName.exe</param>
         internal static void Killalo(string P)
         {
             if (P != null)
             {
-                Process.GetProcesses()
-                            .Where(PR => PR.ProcessName == P).ToList()
-                            .ForEach(PRR => PRR.Kill());
+                FileInfo FI = new FileInfo(P);
+                Process.GetProcesses().Where(PR => PR.ProcessName.ToLower() == FI.Name.Replace(FI.Extension,string.Empty).ToLower()).ToList()
+                    .ForEach(PRR => PRR.Kill());
             }
         }
 
+        /// <summary>
+        /// Kill a process by Process details
+        /// </summary>
+        /// <param name="P">The process</param>
+        internal static void Killalo(Process P)
+        {
+            if (P != null && P.HasExited == false)
+            {
+                Process.GetProcesses().Where(PR => PR.ProcessName == P.ProcessName).ToList()
+                    .ForEach(PRR => PRR.Kill());
+            }
+        }
+
+        /// <summary>
+        /// Reset and read the file settings of the app
+        /// </summary>
+        /// <param name="Cancella">True for reset any setting</param>
         internal static void LeggiImpostazioni(bool Cancella = false)
         {
             if (Cancella) File.Delete("InitianPositionApp.cfg");

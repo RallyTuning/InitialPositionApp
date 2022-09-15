@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Drawing;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -107,7 +108,7 @@ namespace InitianPositionApp
         {
             try
             {
-                if (P.HasExited == false) Funzioni.Killalo(P.ProcessName);
+                Funzioni.Killalo(P);
                 Application.Exit();
             }
             catch (Exception ex)
@@ -120,7 +121,7 @@ namespace InitianPositionApp
         {
             try
             {
-                if (P.HasExited == false) Funzioni.Killalo(P.ProcessName);
+                Funzioni.Killalo(P);
                 //Application.Restart();
                 AvviaExe();
             }
@@ -194,26 +195,21 @@ namespace InitianPositionApp
                 CreateNoWindow = true,
                 RedirectStandardInput = false,
                 RedirectStandardOutput = false,
-                RedirectStandardError = false
+                RedirectStandardError = false,
+                WindowStyle = ProcessWindowStyle.Hidden
             };
 
             P = Process.Start(PSI);
 
-            //p.WaitForInputIdle();
-
-            //Thread.Sleep(500);
-
-            //if (!p.WaitForInputIdle(10000)) // 10 s timout
-            //    throw new ApplicationException("Il processo impiega troppo ad avviarsi");
-
             int MaxCount = 10000;
             int Count = 0;
-
+            Thread.Sleep(500);
             while (Funzioni.HWnd == IntPtr.Zero || Count > MaxCount)
             {
                 P.WaitForInputIdle();
                 P.Refresh();
-                Funzioni.HWnd = P.MainWindowHandle;
+                //Funzioni.HWnd = P.MainWindowHandle;
+                Funzioni.HWnd = Funzioni.EnumerateProcessWindowHandles(P.Id).First();
                 Count++;
             }
 
@@ -221,10 +217,168 @@ namespace InitianPositionApp
 
             Funzioni.SetParent(Funzioni.HWnd, Pnl_Centrale.Handle);
 
-            Funzioni.MoveWindow(Funzioni.HWnd, Funzioni.ExePosX, Funzioni.ExePosY, Funzioni.ExeLarghezza, Funzioni.ExeAltezza - Funzioni.AltezzaToolBar, true);
+            //Funzioni.MoveWindow(Funzioni.HWnd, Funzioni.ExePosX, Funzioni.ExePosY, Funzioni.ExeLarghezza, Funzioni.ExeAltezza - Funzioni.AltezzaToolBar, true);
+            //Funzioni.SetWindowPos(Funzioni.HWnd, IntPtr.Zero, Funzioni.ExePosX, Funzioni.ExePosY, Funzioni.ExeLarghezza, Funzioni.ExeAltezza - Funzioni.AltezzaToolBar, SWP.HIDEWINDOW);
+            Funzioni.SetWindowPos(Funzioni.HWnd, (IntPtr)SpecialWindowHandles.HWND_NOTOPMOST,
+                Funzioni.ExePosX, Funzioni.ExePosY, Funzioni.ExeLarghezza, Funzioni.ExeAltezza - Funzioni.AltezzaToolBar,
+             (uint)SetWindowPosFlags.SWP_NOACTIVATE | (uint)SetWindowPosFlags.SWP_NOOWNERZORDER);
 
-            //PSI.WindowStyle = ProcessWindowStyle.Maximized;
+
+            Funzioni.MoveWindow(Funzioni.HWnd, Funzioni.ExePosX, Funzioni.ExePosY, Funzioni.ExeLarghezza, Funzioni.ExeAltezza - Funzioni.AltezzaToolBar, true);
+            P.Refresh();
+            PaintWindow(Funzioni.HWnd);
+            UpdateWindow(Funzioni.HWnd);
+            Funzioni.ShowWindow(Funzioni.HWnd, 1);
+
+
         }
+
+        [DllImport("user32.dll")]
+        static extern bool UpdateWindow(IntPtr hWnd);
+
+
+        public bool PaintWindow(IntPtr hWnd)
+        {
+            Funzioni.InvalidateRect(hWnd, IntPtr.Zero, true);
+            if (Funzioni.UpdateWindow(hWnd))
+            {
+                Application.DoEvents();
+                return true;
+            }
+
+            return false;
+        }
+
+
+        /// <summary>
+        ///     Special window handles
+        /// </summary>
+        public enum SpecialWindowHandles
+        {
+            // ReSharper disable InconsistentNaming
+            /// <summary>
+            ///     Places the window at the top of the Z order.
+            /// </summary>
+            HWND_TOP = 0,
+            /// <summary>
+            ///     Places the window at the bottom of the Z order. If the hWnd parameter identifies a topmost window, the window loses its topmost status and is placed at the bottom of all other windows.
+            /// </summary>
+            HWND_BOTTOM = 1,
+            /// <summary>
+            ///     Places the window above all non-topmost windows. The window maintains its topmost position even when it is deactivated.
+            /// </summary>
+            HWND_TOPMOST = -1,
+            /// <summary>
+            ///     Places the window above all non-topmost windows (that is, behind all topmost windows). This flag has no effect if the window is already a non-topmost window.
+            /// </summary>
+            HWND_NOTOPMOST = -2
+            // ReSharper restore InconsistentNaming
+        }
+
+        [Flags]
+        public enum SetWindowPosFlags : uint
+        {
+            // ReSharper disable InconsistentNaming
+
+            /// <summary>
+            ///     If the calling thread and the thread that owns the window are attached to different input queues, the system posts the request to the thread that owns the window. This prevents the calling thread from blocking its execution while other threads process the request.
+            /// </summary>
+            SWP_ASYNCWINDOWPOS = 0x4000,
+
+            /// <summary>
+            ///     Prevents generation of the WM_SYNCPAINT message.
+            /// </summary>
+            SWP_DEFERERASE = 0x2000,
+
+            /// <summary>
+            ///     Draws a frame (defined in the window's class description) around the window.
+            /// </summary>
+            SWP_DRAWFRAME = 0x0020,
+
+            /// <summary>
+            ///     Applies new frame styles set using the SetWindowLong function. Sends a WM_NCCALCSIZE message to the window, even if the window's size is not being changed. If this flag is not specified, WM_NCCALCSIZE is sent only when the window's size is being changed.
+            /// </summary>
+            SWP_FRAMECHANGED = 0x0020,
+
+            /// <summary>
+            ///     Hides the window.
+            /// </summary>
+            SWP_HIDEWINDOW = 0x0080,
+
+            /// <summary>
+            ///     Does not activate the window. If this flag is not set, the window is activated and moved to the top of either the topmost or non-topmost group (depending on the setting of the hWndInsertAfter parameter).
+            /// </summary>
+            SWP_NOACTIVATE = 0x0010,
+
+            /// <summary>
+            ///     Discards the entire contents of the client area. If this flag is not specified, the valid contents of the client area are saved and copied back into the client area after the window is sized or repositioned.
+            /// </summary>
+            SWP_NOCOPYBITS = 0x0100,
+
+            /// <summary>
+            ///     Retains the current position (ignores X and Y parameters).
+            /// </summary>
+            SWP_NOMOVE = 0x0002,
+
+            /// <summary>
+            ///     Does not change the owner window's position in the Z order.
+            /// </summary>
+            SWP_NOOWNERZORDER = 0x0200,
+
+            /// <summary>
+            ///     Does not redraw changes. If this flag is set, no repainting of any kind occurs. This applies to the client area, the nonclient area (including the title bar and scroll bars), and any part of the parent window uncovered as a result of the window being moved. When this flag is set, the application must explicitly invalidate or redraw any parts of the window and parent window that need redrawing.
+            /// </summary>
+            SWP_NOREDRAW = 0x0008,
+
+            /// <summary>
+            ///     Same as the SWP_NOOWNERZORDER flag.
+            /// </summary>
+            SWP_NOREPOSITION = 0x0200,
+
+            /// <summary>
+            ///     Prevents the window from receiving the WM_WINDOWPOSCHANGING message.
+            /// </summary>
+            SWP_NOSENDCHANGING = 0x0400,
+
+            /// <summary>
+            ///     Retains the current size (ignores the cx and cy parameters).
+            /// </summary>
+            SWP_NOSIZE = 0x0001,
+
+            /// <summary>
+            ///     Retains the current Z order (ignores the hWndInsertAfter parameter).
+            /// </summary>
+            SWP_NOZORDER = 0x0004,
+
+            /// <summary>
+            ///     Displays the window.
+            /// </summary>
+            SWP_SHOWWINDOW = 0x0040,
+
+            // ReSharper restore InconsistentNaming
+        }
+
+        public static class SWP
+        {
+            public static readonly int
+            NOSIZE = 0x0001,
+            NOMOVE = 0x0002,
+            NOZORDER = 0x0004,
+            NOREDRAW = 0x0008,
+            NOACTIVATE = 0x0010,
+            DRAWFRAME = 0x0020,
+            FRAMECHANGED = 0x0020,
+            SHOWWINDOW = 0x0040,
+            HIDEWINDOW = 0x0080,
+            NOCOPYBITS = 0x0100,
+            NOOWNERZORDER = 0x0200,
+            NOREPOSITION = 0x0200,
+            NOSENDCHANGING = 0x0400,
+            DEFERERASE = 0x2000,
+            ASYNCWINDOWPOS = 0x4000;
+        }
+
+
 
         private async void ReStarter()
         {
@@ -250,7 +404,7 @@ namespace InitianPositionApp
                 }
             });
 
-            if (P.HasExited == false) Funzioni.Killalo(P.ProcessName);
+            Funzioni.Killalo(P);
             AvviaExe();
 
             ReStarter();
