@@ -61,6 +61,7 @@
       <DependentUpon>Frm_Main.cs</DependentUpon>
     </Compile>
     <Compile Include="Funzioni.cs" />
+    <Compile Include="ProcessCreator.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="Frm_Impostazioni.resx">
