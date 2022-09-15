@@ -1,8 +1,10 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -108,7 +110,7 @@ namespace InitianPositionApp
         {
             try
             {
-                if (P.HasExited == false) Funzioni.Killalo(P.ProcessName);
+                if (P != null && P.HasExited == false) Funzioni.Killalo(P.ProcessName);
                 Application.Exit();
             }
             catch (Exception ex)
@@ -121,7 +123,7 @@ namespace InitianPositionApp
         {
             try
             {
-                if (P.HasExited == false) Funzioni.Killalo(P.ProcessName);
+                if (P != null && P.HasExited == false) Funzioni.Killalo(P.ProcessName);
                 //Application.Restart();
                 AvviaExe();
             }
@@ -190,17 +192,23 @@ namespace InitianPositionApp
         {
             Funzioni.HWnd = IntPtr.Zero;
 
-            PSI = new ProcessStartInfo(Funzioni.AppPath)
-            {
-                CreateNoWindow = true,
-                RedirectStandardInput = false,
-                RedirectStandardOutput = false,
-                RedirectStandardError = false
-            };
+            //PSI = new ProcessStartInfo(Funzioni.AppPath)
+            //{
+            //    CreateNoWindow = true,
+            //    RedirectStandardInput = false,
+            //    RedirectStandardOutput = false,
+            //    RedirectStandardError = false
+            //};
 
-            PSI.WindowStyle = ProcessWindowStyle.Hidden;
+            //PSI.WindowStyle = ProcessWindowStyle.Hidden;
 
-            P = Process.Start(PSI);
+            //P = Process.Start(PSI);
+
+
+            var url = @"Test.html";
+            var kioskMode = url + " --kiosk --incognito --disable-pinch --overscroll-history-navigation=0 ";
+
+            StartProcessAsCurrentUser(@"c:\windows\notepad.exe", null, null, false);
 
 
 
@@ -210,10 +218,10 @@ namespace InitianPositionApp
 
             //if (!p.WaitForInputIdle(10000)) // 10 s timout
             //    throw new ApplicationException("Il processo impiega troppo ad avviarsi");
-
+            return;
             int MaxCount = 10000;
             int Count = 0;
-            Thread.Sleep(500);
+            Thread.Sleep(1000);
             while (Funzioni.HWnd == IntPtr.Zero || Count > MaxCount)
             {
                 P.WaitForInputIdle();
@@ -243,6 +251,117 @@ namespace InitianPositionApp
             Funzioni.ShowWindow(Funzioni.HWnd, 1);
 
         }
+
+        private PROCESS_INFORMATION ProcioInfo = new PROCESS_INFORMATION();
+
+        public static bool StartProcessAsCurrentUser(string appPath, string cmdLine = null, string workDir = null, bool visible = true)
+        {
+            var hUserToken = IntPtr.Zero;
+            var startInfo = new STARTUPINFO();
+            var procInfo = new PROCESS_INFORMATION();
+            var pEnv = IntPtr.Zero;
+
+            startInfo.cb = Marshal.SizeOf(typeof(STARTUPINFO));
+            hUserToken = WindowsIdentity.GetCurrent().Token; //get current user token
+
+            var dwCreationFlags = CREATE_UNICODE_ENVIRONMENT | (uint)(visible ? CREATE_NEW_CONSOLE : CREATE_NO_WINDOW);
+            startInfo.wShowWindow = (short)(visible ? SW.SW_SHOW : SW.SW_HIDE);
+            startInfo.lpDesktop = "winsta0\\default";
+
+
+
+            if (!CreateEnvironmentBlock(out pEnv, hUserToken, 0))
+            {
+                throw new Exception("StartProcessAsCurrentUser: CreateEnvironmentBlock failed.");
+            }
+
+            if (!CreateProcessAsUser(hUserToken,
+                appPath, // Application Name
+                $@"""{appPath}"" {cmdLine}", // Command Line
+                IntPtr.Zero,
+                IntPtr.Zero,
+                false,
+                dwCreationFlags,
+                pEnv,
+                workDir, // Working directory
+                ref startInfo,
+                out procInfo))
+            {
+                throw new Win32Exception(Marshal.GetLastWin32Error());
+            }
+            return true;
+        }
+
+        private const int CREATE_NO_WINDOW = 0x08000000;
+        private const int CREATE_NEW_CONSOLE = 0x00000010;
+        private const int CREATE_UNICODE_ENVIRONMENT = 0x400;
+
+        [DllImport("userenv.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool CreateEnvironmentBlock(out IntPtr lpEnvironment, IntPtr hToken, int bInherit);
+
+        [DllImport("advapi32.dll", EntryPoint = "CreateProcessAsUser", SetLastError = true, CharSet = CharSet.Ansi, CallingConvention = CallingConvention.StdCall)]
+        public static extern bool CreateProcessAsUser(IntPtr hToken, string lpApplicationName, string lpCommandLine, IntPtr lpProcessAttributes, IntPtr lpThreadAttributes, bool bInheritHandle, uint dwCreationFlags,
+            IntPtr lpEnvironment, string lpCurrentDirectory, ref STARTUPINFO lpStartupInfo, out PROCESS_INFORMATION lpProcessInformation);
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct STARTUPINFO
+        {
+            public int cb;
+            public string lpReserved;
+            public string lpDesktop;
+            public string lpTitle;
+            public uint dwX;
+            public uint dwY;
+            public uint dwXSize;
+            public uint dwYSize;
+            public uint dwXCountChars;
+            public uint dwYCountChars;
+            public uint dwFillAttribute;
+            public uint dwFlags;
+            public short wShowWindow;
+            public short cbReserved2;
+            public IntPtr lpReserved2;
+            public IntPtr hStdInput;
+            public IntPtr hStdOutput;
+            public IntPtr hStdError;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct PROCESS_INFORMATION
+        {
+            public IntPtr hProcess;
+            public IntPtr hThread;
+            public uint dwProcessId;
+            public uint dwThreadId;
+        }
+
+        public enum SW
+        {
+            SW_HIDE = 0,
+            SW_SHOWNORMAL = 1,
+            SW_NORMAL = 1,
+            SW_SHOWMINIMIZED = 2,
+            SW_SHOWMAXIMIZED = 3, // these two enum members actually have the same value
+            SW_MAXIMIZE = 3, // assigned to them This is not an error
+            SW_SHOWNOACTIVATE = 4,
+            SW_SHOW = 5,
+            SW_MINIMIZE = 6,
+            SW_SHOWMINNOACTIVE = 7,
+            SW_SHOWNA = 8,
+            SW_RESTORE = 9,
+            SW_SHOWDEFAULT = 10,
+            SW_FORCEMINIMIZE = 11,
+            SW_MAX = 12
+        }
+
+
+
+
+
+
+
+
 
         enum WindowStyles : uint
         {
@@ -476,7 +595,7 @@ namespace InitianPositionApp
                 }
             });
 
-            if (P.HasExited == false) Funzioni.Killalo(P.ProcessName);
+            if (P != null && P.HasExited == false) Funzioni.Killalo(P.ProcessName);
             AvviaExe();
 
             ReStarter();
