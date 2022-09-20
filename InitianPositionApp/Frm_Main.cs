@@ -22,12 +22,13 @@ namespace InitianPositionApp
         private static extern bool ReleaseCapture();
 
 
-        private DateTime Adesso = DateTime.Now;
-
         ProcessStartInfo PSI;
         Process P;
 
+        private IntPtr PnlHandle = IntPtr.Zero;
+
         #endregion
+
 
         #region Handles
 
@@ -44,7 +45,9 @@ namespace InitianPositionApp
         {
             try
             {
-                ReStarter();
+                PnlHandle = Pnl_Centrale.Handle;
+
+                Timerozzo();
 
                 AvviaExe();
             }
@@ -91,11 +94,6 @@ namespace InitianPositionApp
                 if (Frm_Impo.ShowDialog() == DialogResult.OK)
                 {
                     ThisMe();
-
-                    if (Funzioni.RestartTimerMin > 0)
-                    {
-                        ReStarter();
-                    }
                 }
             }
             catch (Exception ex)
@@ -141,10 +139,9 @@ namespace InitianPositionApp
             try
             {
                 if (string.IsNullOrEmpty(Txt_Restart.Text)) return;
-                if (Int32.Parse(Txt_Restart.Text) <= 0) return;
+                //if (Int32.Parse(Txt_Restart.Text) <= 0) return;
 
                 Funzioni.RestartTimerMin = Int32.Parse(Txt_Restart.Text);
-                Adesso = DateTime.Now;
             }
             catch (Exception ex)
             {
@@ -163,6 +160,7 @@ namespace InitianPositionApp
         }
 
         #endregion
+
 
         #region void
 
@@ -203,7 +201,7 @@ namespace InitianPositionApp
 
             int MaxCount = 10000;
             int Count = 0;
-            Thread.Sleep(500);
+            Thread.Sleep(2000);
             while (Funzioni.HWnd == IntPtr.Zero || Count > MaxCount)
             {
                 P.WaitForInputIdle();
@@ -215,7 +213,7 @@ namespace InitianPositionApp
 
             if (Funzioni.HWnd == IntPtr.Zero) throw new ApplicationException("The process is taking long to start");
 
-            Funzioni.SetParent(Funzioni.HWnd, Pnl_Centrale.Handle);
+            Funzioni.SetParent(Funzioni.HWnd, PnlHandle);
 
             //Funzioni.MoveWindow(Funzioni.HWnd, Funzioni.ExePosX, Funzioni.ExePosY, Funzioni.ExeLarghezza, Funzioni.ExeAltezza - Funzioni.AltezzaToolBar, true);
             //Funzioni.SetWindowPos(Funzioni.HWnd, IntPtr.Zero, Funzioni.ExePosX, Funzioni.ExePosY, Funzioni.ExeLarghezza, Funzioni.ExeAltezza - Funzioni.AltezzaToolBar, SWP.HIDEWINDOW);
@@ -380,34 +378,42 @@ namespace InitianPositionApp
 
 
 
-        private async void ReStarter()
+        private async void Timerozzo()
         {
-            if (Funzioni.RestartTimerMin == 0) return;
-
-            Adesso = DateTime.Now;
+            DateTime Adesso = DateTime.Now;
 
             await Task.Run(() =>
-            {
-                DateTime dopo = Adesso.AddMinutes(Funzioni.RestartTimerMin);
-                TimeSpan t = Adesso.AddMinutes(Funzioni.RestartTimerMin) - DateTime.Now;
-
-                while (t.Ticks >= 0)
                 {
-                    t = Adesso.AddMinutes(Funzioni.RestartTimerMin) - DateTime.Now;
-
-                    this.Invoke((System.Action)(() =>
+                    while (true)
                     {
-                        Lbl_Timer.Text = t.ToString(@"hh\:mm\:ss");
-                    }));
+                        if (Funzioni.RestartTimerMin == 0)
+                        {
+                            this.Invoke((System.Action)(() => { Lbl_Timer.Text = "00:00:00"; }));
 
-                    Thread.Sleep(500);
-                }
-            });
+                            Thread.Sleep(1000);
 
-            Funzioni.Killalo(P);
-            AvviaExe();
+                            Adesso = DateTime.Now;
 
-            ReStarter();
+                            continue;
+                        }
+
+                        TimeSpan Fine = Adesso.AddMinutes(Funzioni.RestartTimerMin) - DateTime.Now;
+
+                        Fine = Adesso.AddMinutes(Funzioni.RestartTimerMin) - DateTime.Now;
+
+                        this.Invoke((System.Action)(() => { Lbl_Timer.Text = Fine.ToString(@"hh\:mm\:ss"); }));
+
+                        Thread.Sleep(500);
+
+                        if (Fine.Ticks <= 0)
+                        {
+                            Funzioni.Killalo(P);
+                            AvviaExe();
+
+                            Adesso = DateTime.Now;
+                        }
+                    }
+                });
         }
 
         #endregion
