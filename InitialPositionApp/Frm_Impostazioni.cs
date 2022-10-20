@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Windows.Forms;
 
-namespace InitianPositionApp
+namespace InitialPositionApp
 {
     public partial class Frm_Impostazioni : Form
     {

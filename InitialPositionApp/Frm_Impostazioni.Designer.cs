@@ -1,4 +1,4 @@
-﻿namespace InitianPositionApp
+﻿namespace InitialPositionApp
 {
     partial class Frm_Impostazioni
     {

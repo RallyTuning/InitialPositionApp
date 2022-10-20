@@ -7,7 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace InitianPositionApp
+namespace InitialPositionApp
 {
     public partial class Frm_Main : Form
     {
@@ -26,6 +26,7 @@ namespace InitianPositionApp
         Process P;
 
         private IntPtr PnlHandle = IntPtr.Zero;
+        private DateTime Adesso = DateTime.Now;
 
         #endregion
 
@@ -50,6 +51,8 @@ namespace InitianPositionApp
                 Timerozzo();
 
                 AvviaExe();
+
+                Adesso = DateTime.Now;
             }
             catch (Exception ex)
             {
@@ -78,7 +81,7 @@ namespace InitianPositionApp
         {
             try
             {
-                Process.Start("https://github.com/RallyTuning/InitianPositionApp");
+                Process.Start("https://github.com/RallyTuning/InitialPositionApp");
             }
             catch (Exception ex)
             {
@@ -120,8 +123,10 @@ namespace InitianPositionApp
             try
             {
                 Funzioni.Killalo(P);
-                //Application.Restart();
+
                 AvviaExe();
+
+                Adesso = DateTime.Now;
             }
             catch (Exception ex)
             {
@@ -131,23 +136,28 @@ namespace InitianPositionApp
 
         private void Txt_Restart_KeyPress(object sender, KeyPressEventArgs e)
         {
-            e.Handled = !char.IsDigit(e.KeyChar); //&& !char.IsControl(e.KeyChar);
+            e.Handled = !char.IsDigit(e.KeyChar) && e.KeyChar != '\b'; //&& !char.IsControl(e.KeyChar);
         }
 
         private void Txt_Restart_TextChanged(object sender, EventArgs e)
         {
             try
             {
-                if (string.IsNullOrEmpty(Txt_Restart.Text)) return;
+                if (string.IsNullOrEmpty(Txt_Restart.Text))
+                {
+                    Funzioni.RestartTimerMin = 0;
+                }
+                else
+                {
+                    Adesso = DateTime.Now;
+                    Funzioni.RestartTimerMin = Int32.Parse(Txt_Restart.Text);
+                }
                 //if (Int32.Parse(Txt_Restart.Text) <= 0) return;
-
-                Funzioni.RestartTimerMin = Int32.Parse(Txt_Restart.Text);
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-
         }
 
         public void ToolBarSotto_MouseMove(object sender, MouseEventArgs e)
@@ -184,51 +194,55 @@ namespace InitianPositionApp
                 Funzioni.AltezzaToolBar = 0;
         }
 
-        private void AvviaExe()
+        private async void AvviaExe()
         {
-            Funzioni.HWnd = IntPtr.Zero;
-
-            PSI = new ProcessStartInfo(Funzioni.AppPath)
+            await Task.Run(() =>
             {
-                CreateNoWindow = true,
-                RedirectStandardInput = false,
-                RedirectStandardOutput = false,
-                RedirectStandardError = false,
-                WindowStyle = ProcessWindowStyle.Hidden
-            };
+                Funzioni.HWnd = IntPtr.Zero;
 
-            P = Process.Start(PSI);
+                PSI = new ProcessStartInfo(Funzioni.AppPath)
+                {
+                    CreateNoWindow = true,
+                    RedirectStandardInput = false,
+                    RedirectStandardOutput = false,
+                    RedirectStandardError = false,
+                    WindowStyle = ProcessWindowStyle.Hidden
+                };
 
-            int MaxCount = 10000;
-            int Count = 0;
-            Thread.Sleep(2000);
-            while (Funzioni.HWnd == IntPtr.Zero || Count > MaxCount)
-            {
-                P.WaitForInputIdle();
-                P.Refresh();
-                //Funzioni.HWnd = P.MainWindowHandle;
-                Funzioni.HWnd = Funzioni.EnumerateProcessWindowHandles(P.Id).First();
-                Count++;
-            }
+                P = Process.Start(PSI);
+                Thread.Sleep(5000);
 
-            if (Funzioni.HWnd == IntPtr.Zero) throw new ApplicationException("The process is taking long to start");
+                int MaxCount = 10000;
+                int Count = 0;
+                while (Funzioni.HWnd == IntPtr.Zero || Count > MaxCount)
+                {
+                    P.WaitForInputIdle();
+                    P.Refresh();
+                    //Funzioni.HWnd = P.MainWindowHandle;
+                    Funzioni.HWnd = Funzioni.EnumerateProcessWindowHandles(P.Id).First();
+                    Count++;
+                    Console.WriteLine(Count.ToString());
+                }
 
-            Funzioni.SetParent(Funzioni.HWnd, PnlHandle);
+                if (Funzioni.HWnd == IntPtr.Zero) throw new ApplicationException("The process is taking long to start");
 
-            //Funzioni.MoveWindow(Funzioni.HWnd, Funzioni.ExePosX, Funzioni.ExePosY, Funzioni.ExeLarghezza, Funzioni.ExeAltezza - Funzioni.AltezzaToolBar, true);
-            //Funzioni.SetWindowPos(Funzioni.HWnd, IntPtr.Zero, Funzioni.ExePosX, Funzioni.ExePosY, Funzioni.ExeLarghezza, Funzioni.ExeAltezza - Funzioni.AltezzaToolBar, SWP.HIDEWINDOW);
-            Funzioni.SetWindowPos(Funzioni.HWnd, (IntPtr)SpecialWindowHandles.HWND_NOTOPMOST,
-                Funzioni.ExePosX, Funzioni.ExePosY, Funzioni.ExeLarghezza, Funzioni.ExeAltezza - Funzioni.AltezzaToolBar,
-             (uint)SetWindowPosFlags.SWP_NOACTIVATE | (uint)SetWindowPosFlags.SWP_NOOWNERZORDER);
+                Funzioni.SetParent(Funzioni.HWnd, PnlHandle);
 
-
-            Funzioni.MoveWindow(Funzioni.HWnd, Funzioni.ExePosX, Funzioni.ExePosY, Funzioni.ExeLarghezza, Funzioni.ExeAltezza - Funzioni.AltezzaToolBar, true);
-            P.Refresh();
-            PaintWindow(Funzioni.HWnd);
-            UpdateWindow(Funzioni.HWnd);
-            Funzioni.ShowWindow(Funzioni.HWnd, 1);
+                //Funzioni.MoveWindow(Funzioni.HWnd, Funzioni.ExePosX, Funzioni.ExePosY, Funzioni.ExeLarghezza, Funzioni.ExeAltezza - Funzioni.AltezzaToolBar, true);
+                //Funzioni.SetWindowPos(Funzioni.HWnd, IntPtr.Zero, Funzioni.ExePosX, Funzioni.ExePosY, Funzioni.ExeLarghezza, Funzioni.ExeAltezza - Funzioni.AltezzaToolBar, SWP.HIDEWINDOW);
+                Funzioni.SetWindowPos(Funzioni.HWnd, (IntPtr)SpecialWindowHandles.HWND_NOTOPMOST,
+                    Funzioni.ExePosX, Funzioni.ExePosY, Funzioni.ExeLarghezza, Funzioni.ExeAltezza - Funzioni.AltezzaToolBar,
+                 (uint)SetWindowPosFlags.SWP_NOACTIVATE | (uint)SetWindowPosFlags.SWP_NOOWNERZORDER);
 
 
+                PaintWindow(Funzioni.HWnd);
+                //Thread.Sleep(2000);
+                UpdateWindow(Funzioni.HWnd);
+
+                Funzioni.ShowWindow(Funzioni.HWnd, 1);
+                Funzioni.MoveWindow(Funzioni.HWnd, Funzioni.ExePosX, Funzioni.ExePosY, Funzioni.ExeLarghezza, Funzioni.ExeAltezza - Funzioni.AltezzaToolBar, true);
+                //P.Refresh();
+            });
         }
 
         [DllImport("user32.dll")]
@@ -380,7 +394,7 @@ namespace InitianPositionApp
 
         private async void Timerozzo()
         {
-            DateTime Adesso = DateTime.Now;
+            Adesso = DateTime.Now;
 
             await Task.Run(() =>
                 {
@@ -388,7 +402,7 @@ namespace InitianPositionApp
                     {
                         if (Funzioni.RestartTimerMin == 0)
                         {
-                            this.Invoke((System.Action)(() => { Lbl_Timer.Text = "00:00:00"; }));
+                            this.Invoke((Action)(() => { Lbl_Timer.Text = "Disabled"; }));
 
                             Thread.Sleep(1000);
 
@@ -401,15 +415,15 @@ namespace InitianPositionApp
 
                         Fine = Adesso.AddMinutes(Funzioni.RestartTimerMin) - DateTime.Now;
 
-                        this.Invoke((System.Action)(() => { Lbl_Timer.Text = Fine.ToString(@"hh\:mm\:ss"); }));
+                        this.Invoke((Action)(() => { Lbl_Timer.Text = Fine.ToString(@"hh\:mm\:ss"); }));
 
                         Thread.Sleep(500);
 
                         if (Fine.Ticks <= 0)
                         {
                             Funzioni.Killalo(P);
+                            Thread.Sleep(500);
                             AvviaExe();
-
                             Adesso = DateTime.Now;
                         }
                     }
@@ -418,5 +432,46 @@ namespace InitianPositionApp
 
         #endregion
 
+        private void toolStripButton1_Click(object sender, EventArgs e)
+        {
+            //PaintWindow(this.Handle );
+            //Thread.Sleep(2000);
+            //Application.DoEvents();
+            //UpdateWindow(Funzioni.HWnd);
+
+            //this.ForcePaint();
+            SendMessage(Funzioni.HWnd, WmPaint, IntPtr.Zero, IntPtr.Zero);
+        }
+
+        private const int WmPaint = 0x000F;
+
+        [DllImport("User32.dll")]
+        public static extern Int64 SendMessage(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam);
+
+        private void toolStripButton2_Click(object sender, EventArgs e)
+        {
+            SendMessage(Funzioni.HWnd, WmPaint, IntPtr.Zero, IntPtr.Zero);
+        }
+
+        [DllImport("user32.dll")]
+        static extern bool InvalidateRect(IntPtr hWnd, IntPtr lpRect, bool bErase);
+
+        private void toolStripButton3_Click(object sender, EventArgs e)
+        {
+            InvalidateRect(Funzioni.HWnd, IntPtr.Zero, true);
+        }
+    }
+
+    public static class WindowsApi
+    {
+        private const int WmPaint = 0x000F;
+
+        [DllImport("User32.dll")]
+        public static extern Int64 SendMessage(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam);
+
+        public static void ForcePaint(this Form form)
+        {
+            SendMessage(form.Handle, WmPaint, IntPtr.Zero, IntPtr.Zero);
+        }
     }
 }

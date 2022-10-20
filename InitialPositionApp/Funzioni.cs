@@ -4,8 +4,9 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Windows.Forms;
 
-namespace InitianPositionApp
+namespace InitialPositionApp
 {
     internal static class Funzioni
     {
@@ -24,8 +25,7 @@ namespace InitianPositionApp
         internal delegate bool EnumThreadDelegate(IntPtr hWnd, IntPtr lParam);
 
         [DllImport("user32.dll")]
-        internal static extern bool EnumThreadWindows(int dwThreadId, EnumThreadDelegate lpfn,
-            IntPtr lParam);
+        internal static extern bool EnumThreadWindows(int dwThreadId, EnumThreadDelegate lpfn, IntPtr lParam);
 
         internal static IEnumerable<IntPtr> EnumerateProcessWindowHandles(int processId)
         {
@@ -82,7 +82,7 @@ namespace InitianPositionApp
         internal static bool MostraToolBar = true;
         internal static int AltezzaToolBar = 0;
 
-
+        internal static string Cfg_Path = Path.Combine(Application.StartupPath, "InitialPositionApp.cfg");
 
         /// <summary>
         /// Kill a process by PID
@@ -106,7 +106,7 @@ namespace InitianPositionApp
             if (P != null)
             {
                 FileInfo FI = new FileInfo(P);
-                Process.GetProcesses().Where(PR => PR.ProcessName.ToLower() == FI.Name.Replace(FI.Extension,string.Empty).ToLower()).ToList()
+                Process.GetProcesses().Where(PR => PR.ProcessName.ToLower() == FI.Name.Replace(FI.Extension, string.Empty).ToLower()).ToList()
                     .ForEach(PRR => PRR.Kill());
             }
         }
@@ -130,11 +130,11 @@ namespace InitianPositionApp
         /// <param name="Cancella">True for reset any setting</param>
         internal static void LeggiImpostazioni(bool Cancella = false)
         {
-            if (Cancella) File.Delete("InitianPositionApp.cfg");
+            if (Cancella) File.Delete(Cfg_Path);
 
-            if (File.Exists("InitianPositionApp.cfg"))
+            if (File.Exists(Cfg_Path))
             {
-                using (FileStream FS = new FileStream("InitianPositionApp.cfg", FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite))
+                using (FileStream FS = new FileStream(Cfg_Path, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite))
                 {
                     using (StreamReader SR = new StreamReader(FS))
                     {
@@ -206,7 +206,7 @@ namespace InitianPositionApp
             }
             else
             {
-                using (FileStream FS = new FileStream("InitianPositionApp.cfg", FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite))
+                using (FileStream FS = new FileStream(Cfg_Path, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite))
                 {
                     FS.Seek(0, SeekOrigin.Begin);
                     FS.SetLength(0);
@@ -214,7 +214,7 @@ namespace InitianPositionApp
                     using (StreamWriter SB = new StreamWriter(FS))
                     {
                         SB.WriteLine("**************************************************");
-                        SB.WriteLine("*    Configuration file of InitianPositionApp    *");
+                        SB.WriteLine("*    Configuration file of     *");
                         SB.WriteLine("**************************************************");
                         SB.WriteLine("");
                         SB.WriteLine("* The exe app to start");
