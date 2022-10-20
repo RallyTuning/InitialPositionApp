@@ -84,6 +84,34 @@ namespace InitialPositionApp
 
         internal static string Cfg_Path = Path.Combine(Application.StartupPath, "InitialPositionApp.cfg");
 
+
+        internal static void InvocaSicuro(this Control control, Action action)
+        {
+            if (control.InvokeRequired)
+                control.Invoke(action);
+            else
+                action();
+        }
+
+        internal static T InvocaSicuro<T>(this Control control, Func<T> func) =>
+            control.InvokeRequired
+            ? (T)control.Invoke((Delegate)func)
+            : func();
+
+        internal static void InvocaSicuro<C>(this C control, Action<C> action) where C : Control
+        {
+            if (control.InvokeRequired)
+                control.Invoke((Action)(() => action(control)));
+            else
+                action(control);
+        }
+
+        internal static T InvocaSicuro<C, T>(this C control, Func<C, T> func) where C : Control =>
+            control.InvokeRequired
+            ? (T)control.Invoke((Action)(() => func(control)))
+            : func(control);
+
+
         /// <summary>
         /// Kill a process by PID
         /// </summary>

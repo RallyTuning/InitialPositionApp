@@ -47,6 +47,7 @@
             this.toolStripButton1 = new System.Windows.Forms.ToolStripButton();
             this.toolStripButton2 = new System.Windows.Forms.ToolStripButton();
             this.toolStripButton3 = new System.Windows.Forms.ToolStripButton();
+            this.toolStripButton4 = new System.Windows.Forms.ToolStripButton();
             this.ToolBarSotto.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -72,7 +73,8 @@
             this.toolStripLabel2,
             this.toolStripButton1,
             this.toolStripButton2,
-            this.toolStripButton3});
+            this.toolStripButton3,
+            this.toolStripButton4});
             this.ToolBarSotto.Location = new System.Drawing.Point(0, 275);
             this.ToolBarSotto.Name = "ToolBarSotto";
             this.ToolBarSotto.ShowItemToolTips = false;
@@ -88,7 +90,7 @@
             this.Btn_Impostazioni,
             this.toolStripSeparator3,
             this.Btn_Esci});
-            this.toolStripDropDownButton1.Image = ((System.Drawing.Image)(resources.GetObject("toolStripDropDownButton1.Image")));
+            this.toolStripDropDownButton1.Image = global::InitialPositionApp.Properties.Resources.monitor;
             this.toolStripDropDownButton1.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.toolStripDropDownButton1.Name = "toolStripDropDownButton1";
             this.toolStripDropDownButton1.Size = new System.Drawing.Size(67, 22);
@@ -98,32 +100,35 @@
             // 
             this.Btn_Lbl_Versione.Enabled = false;
             this.Btn_Lbl_Versione.Name = "Btn_Lbl_Versione";
-            this.Btn_Lbl_Versione.Size = new System.Drawing.Size(124, 22);
+            this.Btn_Lbl_Versione.Size = new System.Drawing.Size(180, 22);
             this.Btn_Lbl_Versione.Text = "Version: 0";
             // 
             // Btn_About
             // 
+            this.Btn_About.Image = global::InitialPositionApp.Properties.Resources.information;
             this.Btn_About.Name = "Btn_About";
-            this.Btn_About.Size = new System.Drawing.Size(124, 22);
+            this.Btn_About.Size = new System.Drawing.Size(180, 22);
             this.Btn_About.Text = "&About";
             this.Btn_About.Click += new System.EventHandler(this.Btn_About_Click);
             // 
             // Btn_Impostazioni
             // 
+            this.Btn_Impostazioni.Image = global::InitialPositionApp.Properties.Resources.setting_tools;
             this.Btn_Impostazioni.Name = "Btn_Impostazioni";
-            this.Btn_Impostazioni.Size = new System.Drawing.Size(124, 22);
+            this.Btn_Impostazioni.Size = new System.Drawing.Size(180, 22);
             this.Btn_Impostazioni.Text = "&Settings";
             this.Btn_Impostazioni.Click += new System.EventHandler(this.Btn_Impostazioni_Click);
             // 
             // toolStripSeparator3
             // 
             this.toolStripSeparator3.Name = "toolStripSeparator3";
-            this.toolStripSeparator3.Size = new System.Drawing.Size(121, 6);
+            this.toolStripSeparator3.Size = new System.Drawing.Size(177, 6);
             // 
             // Btn_Esci
             // 
+            this.Btn_Esci.Image = global::InitialPositionApp.Properties.Resources.door_in;
             this.Btn_Esci.Name = "Btn_Esci";
-            this.Btn_Esci.Size = new System.Drawing.Size(124, 22);
+            this.Btn_Esci.Size = new System.Drawing.Size(180, 22);
             this.Btn_Esci.Text = "&Quit";
             this.Btn_Esci.Click += new System.EventHandler(this.Btn_Esci_Click);
             // 
@@ -134,7 +139,7 @@
             // 
             // Btn_Riavvia
             // 
-            this.Btn_Riavvia.Image = ((System.Drawing.Image)(resources.GetObject("Btn_Riavvia.Image")));
+            this.Btn_Riavvia.Image = global::InitialPositionApp.Properties.Resources.arrow_refresh;
             this.Btn_Riavvia.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.Btn_Riavvia.Name = "Btn_Riavvia";
             this.Btn_Riavvia.Size = new System.Drawing.Size(89, 22);
@@ -206,6 +211,16 @@
             this.toolStripButton3.Text = "toolStripButton3";
             this.toolStripButton3.Click += new System.EventHandler(this.toolStripButton3_Click);
             // 
+            // toolStripButton4
+            // 
+            this.toolStripButton4.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.toolStripButton4.Image = ((System.Drawing.Image)(resources.GetObject("toolStripButton4.Image")));
+            this.toolStripButton4.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.toolStripButton4.Name = "toolStripButton4";
+            this.toolStripButton4.Size = new System.Drawing.Size(23, 20);
+            this.toolStripButton4.Text = "toolStripButton4";
+            this.toolStripButton4.Click += new System.EventHandler(this.toolStripButton4_Click);
+            // 
             // Frm_Main
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -248,6 +263,7 @@
         private System.Windows.Forms.ToolStripButton toolStripButton1;
         private System.Windows.Forms.ToolStripButton toolStripButton2;
         private System.Windows.Forms.ToolStripButton toolStripButton3;
+        private System.Windows.Forms.ToolStripButton toolStripButton4;
     }
 }
 

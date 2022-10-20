@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -53,6 +55,10 @@ namespace InitialPositionApp
                 AvviaExe();
 
                 Adesso = DateTime.Now;
+
+                _cancelationTokenSource = new CancellationTokenSource();
+                new Task(() => CheckReportRequestsAndGenerateReports(), _cancelationTokenSource.Token, TaskCreationOptions.LongRunning).Start();
+
             }
             catch (Exception ex)
             {
@@ -459,6 +465,168 @@ namespace InitialPositionApp
         private void toolStripButton3_Click(object sender, EventArgs e)
         {
             InvalidateRect(Funzioni.HWnd, IntPtr.Zero, true);
+        }
+
+
+
+        private CancellationTokenSource _cancelationTokenSource = new CancellationTokenSource();
+
+        private void toolStripButton4_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                
+
+                
+
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
+
+        private void CheckReportRequestsAndGenerateReports( )
+        {
+            while (!_cancelationTokenSource.IsCancellationRequested)
+            {
+
+                //var reportRequestTask = Task.Factory.StartNew(() => noRequest = CheckReportRequestsAndGenerateReports(), _cancelationTokenSource.Token);
+
+                //Bitmap bmp = new Bitmap(Pnl_Centrale.Width, Pnl_Centrale.Height);
+                //Pnl_Centrale.DrawToBitmap(bmp, new Rectangle(0, 0, bmp.Width, bmp.Height));
+                //bmp.Save(@"MyPanelImage.bmp");
+                List<Bitmap> Splittate1 = splitBitmap(TakeComponentScreenShot(Pnl_Centrale), 2, 2);
+                List<Bitmap> Splittate2 = new List<Bitmap>();
+                List<List<bool>> iHash1 = new List<List<bool>>();
+                List<List<bool>> iHash2 = new List<List<bool>>();
+
+                foreach (Bitmap bitmap in Splittate1)
+                {
+                    iHash1.Add(GetHash(bitmap));
+                }
+
+                //TakeComponentScreenShot(Pnl_Centrale).Save(@"screen1.bmp");
+
+                //Task task = Task.Delay(30000)
+                //.ContinueWith(t => TakeComponentScreenShot(Pnl_Centrale).Save(@"screen2.bmp"));
+                //task.Wait();
+
+                //Task task = Task.Delay(30000)
+                //                .ContinueWith(t => Splittate2 = splitBitmap(TakeComponentScreenShot(Pnl_Centrale), 2, 2));
+                //task.Wait();
+
+                _cancelationTokenSource.Token.WaitHandle.WaitOne(new TimeSpan(0, 0, 30));
+
+                Splittate2 = splitBitmap(TakeComponentScreenShot(Pnl_Centrale), 2, 2);
+
+                foreach (Bitmap bitmap in Splittate2)
+                {
+                    iHash2.Add(GetHash(bitmap));
+                }
+
+                int equalElements = 0;
+                for (int H = 0; H < iHash1.Count(); H++)
+                {
+                    equalElements += iHash1[H].Zip(iHash2[H], (i, j) => i == j).Count(eq => eq);
+                }
+
+                //List<bool> iHash1 = GetHash(new Bitmap(@"screen1.bmp"));
+                //List<bool> iHash2 = GetHash(new Bitmap(@"screen2.bmp"));
+
+                //determine the number of equal pixel (x of 256)
+                //int equalElements = iHash1.Zip(iHash2, (i, j) => i == j).Count(eq => eq);
+
+                Console.WriteLine(equalElements.ToString());
+
+                if (equalElements == 1024)
+                {
+                    Funzioni.Killalo(P);
+
+                    AvviaExe();
+
+                    Adesso = DateTime.Now;
+                }
+
+
+                _cancelationTokenSource.Token.WaitHandle.WaitOne(new TimeSpan(0,1,0));
+
+            }
+        }
+
+
+
+
+
+
+
+        public static Bitmap TakeComponentScreenShot(Control   ctrl)
+        {
+            // find absolute position of the control in the screen.
+            Rectangle rect = new Rectangle(Point.Empty, ctrl.Size);
+            do
+            {
+                rect.Offset(ctrl.Location);
+                ctrl = ctrl.Parent;
+            }
+            while (ctrl != null);
+
+            using (Bitmap bmp = new Bitmap(rect.Width, rect.Height, PixelFormat.Format32bppArgb))
+            {
+                using (Graphics g = Graphics.FromImage(bmp))
+                {
+                    g.CopyFromScreen(rect.Left, rect.Top, 0, 0, bmp.Size, CopyPixelOperation.SourceCopy);
+                }
+                return new Bitmap(bmp);
+            }
+        }
+
+        public static List<bool> GetHash(Bitmap bmpSource)
+        {
+            List<bool> lResult = new List<bool>();
+            //create new image with 16x16 pixel
+            using (Bitmap bmpMin = new Bitmap(bmpSource, new Size(64, 64)))
+            {
+                for (int j = 0; j < bmpMin.Height; j++)
+                {
+                    for (int i = 0; i < bmpMin.Width; i++)
+                    {
+                        //reduce colors to true / false                
+                        lResult.Add(bmpMin.GetPixel(i, j).GetBrightness() < 0.5f);
+                    }
+                }
+                return lResult;
+            }
+        }
+
+        public List<Bitmap> splitBitmap(Bitmap picture, int row, int col)
+        {
+            List<Bitmap> lResult = new List<Bitmap>();
+
+            using (var originalImage = new Bitmap(picture))
+            {
+                var incX = originalImage.Width / row;
+                var incY = originalImage.Height / col;
+                var startX = 0;
+                for (int i = 0; i < row; i++)
+                {
+                    var startY = 0;
+                    for (int j = 0; j < col; j++)
+                    {
+                        var rect = new Rectangle(startX, startY, incX, incY);
+                        using (var clonedImage = originalImage.Clone(rect, originalImage.PixelFormat))
+                        {
+                            lResult.Add(new Bitmap(clonedImage)); //clonedImage.Save(directory + $"\\PageImage{i + 1}{j + 1}.jpg");
+                            clonedImage.Save($"PageImage{i + 1}{j + 1}.jpg");
+                        }
+
+                        startY += incY;
+                    }
+                    startX += incX;
+                }
+            }
+            return lResult;
         }
     }
 
