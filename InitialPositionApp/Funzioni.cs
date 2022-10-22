@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -82,35 +84,12 @@ namespace InitialPositionApp
         internal static bool MostraToolBar = true;
         internal static int AltezzaToolBar = 0;
 
+        internal static bool RestartSeFreezed = false;
+
         internal static string Cfg_Path = Path.Combine(Application.StartupPath, "InitialPositionApp.cfg");
 
-
-        internal static void InvocaSicuro(this Control control, Action action)
-        {
-            if (control.InvokeRequired)
-                control.Invoke(action);
-            else
-                action();
-        }
-
-        internal static T InvocaSicuro<T>(this Control control, Func<T> func) =>
-            control.InvokeRequired
-            ? (T)control.Invoke((Delegate)func)
-            : func();
-
-        internal static void InvocaSicuro<C>(this C control, Action<C> action) where C : Control
-        {
-            if (control.InvokeRequired)
-                control.Invoke((Action)(() => action(control)));
-            else
-                action(control);
-        }
-
-        internal static T InvocaSicuro<C, T>(this C control, Func<C, T> func) where C : Control =>
-            control.InvokeRequired
-            ? (T)control.Invoke((Action)(() => func(control)))
-            : func(control);
-
+        // For the resize
+        private static readonly int RidimensionaA = 256;
 
         /// <summary>
         /// Kill a process by PID
@@ -150,6 +129,73 @@ namespace InitialPositionApp
                 Process.GetProcesses().Where(PR => PR.ProcessName == P.ProcessName).ToList()
                     .ForEach(PRR => PRR.Kill());
             }
+        }
+
+        /// <summary>
+        /// Take a screenshot of a control
+        /// </summary>
+        /// <param name="Ctrl">The control to use</param>
+        /// <returns>A screenshot in Bitmap</returns>
+        internal static Bitmap TakeComponentScreenShot(Control Ctrl)
+        {
+            // find absolute position of the control in the screen.
+            Rectangle Rect = new Rectangle(Point.Empty, Ctrl.Size);
+            do
+            {
+                Rect.Offset(Ctrl.Location);
+                Ctrl = Ctrl.Parent;
+            }
+            while (Ctrl != null);
+
+            using (Bitmap BMP = new Bitmap(Rect.Width, Rect.Height, PixelFormat.Format32bppArgb))
+            {
+                using (Graphics G = Graphics.FromImage(BMP))
+                {
+                    G.CopyFromScreen(Rect.Left, Rect.Top, 0, 0, BMP.Size, CopyPixelOperation.SourceCopy);
+                }
+                return new Bitmap(BMP);
+            }
+        }
+
+        /// <summary>
+        /// Give the list of true/false based on black/white of the input Bitmap
+        /// </summary>
+        /// <param name="BMPSource">The Bitmap to elaborate</param>
+        /// <returns>A list of boolean</returns>
+        internal static List<bool> GetHash(Bitmap BMPSource)
+        {
+            List<bool> ListaResult = new List<bool>();
+
+            using (Bitmap BMPMin = new Bitmap(BMPSource, new Size(RidimensionaA, RidimensionaA))) // Resize for save memory, but less precise
+            {
+                for (int j = 0; j < BMPMin.Height; j++)
+                {
+                    for (int i = 0; i < BMPMin.Width; i++)
+                    {
+                        ListaResult.Add(BMPMin.GetPixel(i, j).GetBrightness() < 0.5f);//reduce colors to true / false
+                    }
+                }
+                return ListaResult;
+            }
+        }
+
+        /// <summary>
+        /// Give the list of boolean based on black/white of the input control to take a screenshot
+        /// </summary>
+        /// <param name="Ctrl">The control to elaborate</param>
+        /// <returns>A list of boolean</returns>
+        internal static List<bool> GetHashDaControllo(this Control Ctrl)
+        {
+            return GetHash(TakeComponentScreenShot(Ctrl));
+        }
+
+        /// <summary>
+        /// Give the total pixels of the resized image
+        /// </summary>
+        /// <returns>Int of pixels</returns>
+        internal static int PixelMassimi()
+        {
+            return RidimensionaA * RidimensionaA;
         }
 
         /// <summary>
@@ -225,6 +271,10 @@ namespace InitialPositionApp
                                     MostraToolBar = Convert.ToBoolean(Valor);
                                     break;
 
+                                case "restartiffreezed":
+                                    RestartSeFreezed = Convert.ToBoolean(Valor);
+                                    break;
+
                                 default:
                                     break;
                             }
@@ -277,6 +327,9 @@ namespace InitialPositionApp
                         SB.WriteLine("");
                         SB.WriteLine("* Auto-restart the app after X minutes");
                         SB.WriteLine("RestartTimerMin = " + RestartTimerMin.ToString());
+                        SB.WriteLine("");
+                        SB.WriteLine("* Auto-restart the app if is freezed");
+                        SB.WriteLine("RestartIfFreezed = " + RestartSeFreezed.ToString());
                         SB.WriteLine("");
                         SB.WriteLine("* Show the tollbar on the bottom");
                         SB.WriteLine("ShowToolBar = " + MostraToolBar.ToString());

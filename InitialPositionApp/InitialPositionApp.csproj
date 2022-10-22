@@ -48,6 +48,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="APIs.cs" />
     <Compile Include="Frm_Impostazioni.cs">
       <SubType>Form</SubType>
     </Compile>

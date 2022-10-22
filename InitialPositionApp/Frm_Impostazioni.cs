@@ -40,15 +40,17 @@ namespace InitialPositionApp
                     Nud_RestartMin.Minimum = 1;
                     Nud_RestartMin.Value = Funzioni.RestartTimerMin;
                     Nud_RestartMin.Enabled = true;
-                    Chk_Restart.Checked = true; 
+                    Chk_Restart.Checked = true;
                 }
                 else
                 {
                     Nud_RestartMin.Minimum = 0;
                     Nud_RestartMin.Value = 0;
                     Nud_RestartMin.Enabled = false;
-                    Chk_Restart.Checked = false;  
+                    Chk_Restart.Checked = false;
                 }
+
+                Chk_RestartSeFreezed.Checked = Funzioni.RestartSeFreezed;
             }
             catch (Exception ex)
             {
@@ -100,6 +102,7 @@ namespace InitialPositionApp
                     case true when Nud_Exe_Y.Value != Funzioni.ExePosY:
                     case true when Chk_MostraToolbar.Checked != Funzioni.MostraToolBar:
                     case true when Nud_RestartMin.Value != Funzioni.RestartTimerMin:
+                    case true when Chk_RestartSeFreezed.Checked != Funzioni.RestartSeFreezed:
                         DaSalvare = true;
                         break;
                     default:
@@ -132,6 +135,8 @@ namespace InitialPositionApp
 
                     Funzioni.MostraToolBar = Chk_MostraToolbar.Checked;
 
+                    Funzioni.RestartSeFreezed = Chk_RestartSeFreezed.Checked;
+
                     Funzioni.LeggiImpostazioni(true);
 
                     if (Funzioni.HWnd != IntPtr.Zero)
@@ -157,8 +162,8 @@ namespace InitialPositionApp
             if (Chk_Restart.Checked)
             {
                 Nud_RestartMin.Minimum = 1;
-                if (Funzioni.RestartTimerMin>0)
-                Nud_RestartMin.Value = Funzioni.RestartTimerMin;
+                if (Funzioni.RestartTimerMin > 0)
+                    Nud_RestartMin.Value = Funzioni.RestartTimerMin;
             }
             else
             {
