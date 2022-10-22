@@ -8,6 +8,8 @@ namespace InitialPositionApp
         public Frm_Impostazioni()
         {
             InitializeComponent();
+
+            this.Icon = Properties.Resources.Saki_NuoveXT_Apps_display;
         }
 
         private void Frm_Impostazioni_Load(object sender, EventArgs e)

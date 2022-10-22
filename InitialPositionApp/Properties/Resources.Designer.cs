@@ -101,6 +101,16 @@ namespace InitialPositionApp.Properties {
         }
         
         /// <summary>
+        ///   Cerca una risorsa localizzata di tipo System.Drawing.Icon simile a (Icona).
+        /// </summary>
+        internal static System.Drawing.Icon Saki_NuoveXT_Apps_display {
+            get {
+                object obj = ResourceManager.GetObject("Saki_NuoveXT_Apps_display", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
+        /// <summary>
         ///   Cerca una risorsa localizzata di tipo System.Drawing.Bitmap.
         /// </summary>
         internal static System.Drawing.Bitmap setting_tools {

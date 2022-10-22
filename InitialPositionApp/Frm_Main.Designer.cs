@@ -200,7 +200,7 @@
             "No",
             "Yes"});
             this.Cmb_RestartIfFreezed.Name = "Cmb_RestartIfFreezed";
-            this.Cmb_RestartIfFreezed.Size = new System.Drawing.Size(53, 23);
+            this.Cmb_RestartIfFreezed.Size = new System.Drawing.Size(43, 23);
             this.Cmb_RestartIfFreezed.SelectedIndexChanged += new System.EventHandler(this.Cmb_RestartIfFreezed_SelectedIndexChanged);
             // 
             // Lbl_Stato

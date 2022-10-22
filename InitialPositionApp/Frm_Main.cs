@@ -32,9 +32,10 @@ namespace InitialPositionApp
         {
             InitializeComponent();
 
-            ThisMe();
-
             Btn_Lbl_Versione.Text = "Version: " + System.Reflection.Assembly.GetEntryAssembly().GetName().Version.Major;
+            this.Icon = Properties.Resources.Saki_NuoveXT_Apps_display;
+
+            ThisMe();
         }
 
         private void Frm_Main_Shown(object sender, EventArgs e)
@@ -301,7 +302,7 @@ namespace InitialPositionApp
                 int equalElements = iHash1.Zip(iHash2, (i, j) => i == j).Count(eq => eq);
 
 
-                this.Invoke((Action)(() => { Lbl_Stato.Text = "Match: " + equalElements.ToString(); }));
+                this.Invoke((Action)(() => { Lbl_Stato.Text = "Match: " + equalElements.ToString() + " (" + (equalElements * 100) / Funzioni.PixelMassimi() + "%)"; }));
 
 
                 if (equalElements == Funzioni.PixelMassimi())
